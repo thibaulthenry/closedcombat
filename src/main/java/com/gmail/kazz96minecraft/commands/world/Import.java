@@ -1,4 +1,4 @@
-package com.gmail.kazz96minecraft.commands.map;
+package com.gmail.kazz96minecraft.commands.world;
 
 import com.gmail.kazz96minecraft.commands.AbstractCommand;
 import com.gmail.kazz96minecraft.commands.Commands;
@@ -11,6 +11,7 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.DimensionTypes;
 import org.spongepowered.api.world.WorldArchetype;
 import org.spongepowered.api.world.storage.WorldProperties;
@@ -23,14 +24,13 @@ public class Import extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        if(!arguments.<String>getOne("mapName").isPresent()) {
-            throw new CommandException(Text.of("todo pas du tout d'arg")/*TODO*/);
+        if (!arguments.<String>getOne("world-name").isPresent()) {
+            throw new CommandException(Text.of(TextColors.RED, arguments, " plz worldname"));
         }
+        MapDatas mapDatas = new MapDatas(arguments.<String>getOne("world-name").get());
+        String worldName = mapDatas.getMapName();
 
-        MapDatas mapDatas = new MapDatas(arguments.<String>getOne("mapName").get());
-        String mapName = mapDatas.getMapName();
-
-        if (Sponge.getServer().getWorld(mapName).isPresent()) {
+        if (Sponge.getServer().getWorld(worldName).isPresent()) {
             throw new CommandException(Text.of("todo already loaded")/*TODO*/);
         }
 
@@ -50,11 +50,11 @@ public class Import extends AbstractCommand {
                 .keepsSpawnLoaded(true)
                 .loadsOnStartup(true);
 
-        WorldArchetype settings = mapBuilder.build(mapName, mapName);
+        WorldArchetype settings = mapBuilder.build(worldName, worldName);
 
         WorldProperties properties;
         try {
-            properties = Sponge.getServer().createWorldProperties(mapName, settings);
+            properties = Sponge.getServer().createWorldProperties(worldName, settings);
         } catch (IOException e) {
             e.printStackTrace();
             throw new CommandException(Text.of("todo crash")/*TODO*/);
@@ -70,11 +70,10 @@ public class Import extends AbstractCommand {
     @Override
     public CommandSpec getCommandSpec() {
         return CommandSpec.builder()
-                .permission("closedcombat.import")
-                .description(Text.of("Import Closed Combat Map"))
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("mapName"))))
+                .permission("closedcombat.usage.world.import")
+                .description(Text.of("Import World"))
+                .arguments(GenericArguments.string(Text.of("world-name")))
                 .executor(Commands.IMPORT.get())
-
                 .build();
     }
 

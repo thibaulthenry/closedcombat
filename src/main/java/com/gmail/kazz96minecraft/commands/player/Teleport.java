@@ -56,7 +56,7 @@ public class Teleport extends AbstractCommand {
     @Override
     public CommandSpec getCommandSpec() {
         return CommandSpec.builder()
-                .permission("closedcombat.tp")
+                .permission("closedcombat.usage.tp")
                 .description(Text.of("Teleport a player to a Closed Combat Map"))
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("mapName"))))
                 .executor(Commands.TELEPORT.get())

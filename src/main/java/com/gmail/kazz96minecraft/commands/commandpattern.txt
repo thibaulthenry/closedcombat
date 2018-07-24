@@ -1,3 +1,0 @@
-/cc import <mapName>
-/cc load <mapName>
-/cc tp (optional) <player> <mapName> (optionals) <x> <y> <z> if no vector -> spawn
