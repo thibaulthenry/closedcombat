@@ -49,8 +49,10 @@ public class Unload extends AbstractCommand {
 
         World defaultWorld = Sponge.getServer().getWorld(Sponge.getServer().getDefaultWorld().get().getWorldName()).get();
 
-        world.getProperties().setLoadOnStartup(false);
-        world.getProperties().setEnabled(false);
+        properties.setLoadOnStartup(false);
+        properties.setEnabled(false);
+
+        Sponge.getServer().saveWorldProperties(properties);
 
         world.getEntities().stream()
                 .filter(entity -> entity instanceof Player)
@@ -67,9 +69,6 @@ public class Unload extends AbstractCommand {
             e.printStackTrace();
             throw new CommandException(Text.of(TextColors.RED, "Saving world before unload faileeed"), false);
         }
-
-
-
 
         source.sendMessage(Text.of(TextColors.DARK_GREEN, properties.getWorldName(), " unloaded successfully"));
 

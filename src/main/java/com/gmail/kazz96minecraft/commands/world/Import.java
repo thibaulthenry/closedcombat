@@ -47,6 +47,7 @@ public class Import extends AbstractCommand {
                 .dimension(DimensionTypes.OVERWORLD)
                 .generator(mapDatas.getGeneratorType())
                 .enabled(true)
+                .generateSpawnOnLoad(false)
                 .keepsSpawnLoaded(true)
                 .loadsOnStartup(true);
 

@@ -64,11 +64,7 @@ public class Load extends AbstractCommand {
 
             load.get().getProperties().setLoadOnStartup(true);
 
-            try {
-                load.get().save();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            Sponge.getServer().saveWorldProperties(load.get().getProperties());
 
             source.sendMessage(Text.of(TextColors.DARK_GREEN, worldName, " loaded successfully"));
         }).submit(ClosedCombat.getInstance().getPlugin());
