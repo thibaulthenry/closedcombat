@@ -1,11 +1,11 @@
 package com.gmail.kazz96minecraft.utils.xnbt.types;
 
+import com.gmail.kazz96minecraft.utils.xnbt.BaseTag;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import com.gmail.kazz96minecraft.utils.xnbt.BaseTag;
 
 public abstract class AbstractCompoundTag extends BaseTag implements Map<String, NBTTag> {
 

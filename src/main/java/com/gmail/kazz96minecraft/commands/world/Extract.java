@@ -1,7 +1,6 @@
 package com.gmail.kazz96minecraft.commands.world;
 
 import com.gmail.kazz96minecraft.commands.AbstractCommand;
-import com.gmail.kazz96minecraft.commands.Commands;
 import com.gmail.kazz96minecraft.utils.Zip;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -15,8 +14,6 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 public class Extract extends AbstractCommand {
@@ -58,12 +55,7 @@ public class Extract extends AbstractCommand {
                 .permission("closedcombat.usage.world.extract")
                 .description(Text.of("Extract Backuped World"))
                 .arguments(GenericArguments.string(Text.of("world-name")))
-                .executor(Commands.EXTRACT.get())
+                .executor(instance)
                 .build();
-    }
-
-    @Override
-    public List<String> getAliases() {
-        return Arrays.asList("extract", "etc");
     }
 }

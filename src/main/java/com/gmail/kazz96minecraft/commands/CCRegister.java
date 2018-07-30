@@ -1,33 +1,41 @@
 package com.gmail.kazz96minecraft.commands;
 
+import com.gmail.kazz96minecraft.commands.world.*;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-
 public class CCRegister {
 
-    private final HashMap<List<String>, CommandSpec> subCommands = new HashMap<>();
     private final CommandSpec commandSpec;
 
     public CCRegister() {
-        Arrays.stream(Commands.values())
-                .forEach(commands -> addCommand(commands.get()));
+        CommandSpec worldCommandSpec = CommandSpec.builder()
+                .extendedDescription(Text.of("Closed Combat world commands"))
+                .permission("closedcombat.usage.world")
+                .child(new Backup().getCommandSpec(), "backup", "zip")
+                .child(new Delete().getCommandSpec(), "delete", "rm")
+                .child(new Extract().getCommandSpec(), "extract", "unzip")
+                .child(new Import().getCommandSpec(), "import", "imp")
+                .child(new List().getCommandSpec(), "list", "ls")
+                .child(new Load().getCommandSpec(), "load", "ld")
+                .child(new Unload().getCommandSpec(), "unload", "uld")
+                .build();
+
+        CommandSpec mapCommandSpec = CommandSpec.builder()
+                .extendedDescription(Text.of("Closed Combat map commands"))
+                .permission("closedcombat.usage.map")
+                .child(new Teleport().getCommandSpec(), "teleport", "tp", "go")
+                .build();
 
         commandSpec = CommandSpec.builder()
                 .extendedDescription(Text.of("Closed Combat plugin commands"))
                 .permission("closedcombat.usage")
-                .children(subCommands)
+                .child(worldCommandSpec, "world", "w")
+                .child(mapCommandSpec, "map", "m")
                 .build();
     }
 
     public CommandSpec getCommandSpec() {
         return commandSpec;
-    }
-
-    private void addCommand(AbstractCommand command) {
-        subCommands.put(command.getAliases(), command.getCommandSpec());
     }
 }

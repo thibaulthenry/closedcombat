@@ -15,7 +15,7 @@ public interface NBTTag {
      * Contains all base NBT types.
      * </p>
      */
-    public static enum BaseType {
+    enum BaseType {
 
         XNBT((byte) -1),
         END((byte) 0),
@@ -50,7 +50,7 @@ public interface NBTTag {
 
         private final byte id;
 
-        private BaseType(final byte id) {
+        BaseType(final byte id) {
             this.id = id;
         }
 

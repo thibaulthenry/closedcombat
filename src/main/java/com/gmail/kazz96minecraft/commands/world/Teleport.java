@@ -1,7 +1,6 @@
-package com.gmail.kazz96minecraft.commands.player;
+package com.gmail.kazz96minecraft.commands.world;
 
 import com.gmail.kazz96minecraft.commands.AbstractCommand;
-import com.gmail.kazz96minecraft.commands.Commands;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -15,8 +14,6 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 public class Teleport extends AbstractCommand {
@@ -59,12 +56,7 @@ public class Teleport extends AbstractCommand {
                 .permission("closedcombat.usage.tp")
                 .description(Text.of("Teleport a player to a Closed Combat Map"))
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("mapName"))))
-                .executor(Commands.TELEPORT.get())
+                .executor(instance)
                 .build();
-    }
-
-    @Override
-    public List<String> getAliases() {
-        return Arrays.asList("teleport", "tp", "go");
     }
 }

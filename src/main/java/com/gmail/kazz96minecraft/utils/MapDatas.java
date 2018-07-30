@@ -1,6 +1,5 @@
 package com.gmail.kazz96minecraft.utils;
 
-
 import com.gmail.kazz96minecraft.utils.xnbt.XNBT;
 import com.gmail.kazz96minecraft.utils.xnbt.types.CompoundTag;
 import com.gmail.kazz96minecraft.utils.xnbt.types.NBTTag;

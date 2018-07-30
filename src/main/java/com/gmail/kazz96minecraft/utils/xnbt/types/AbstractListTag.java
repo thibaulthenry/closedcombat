@@ -1,12 +1,8 @@
 package com.gmail.kazz96minecraft.utils.xnbt.types;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-
 import com.gmail.kazz96minecraft.utils.xnbt.BaseTag;
+
+import java.util.*;
 
 public abstract class AbstractListTag extends BaseTag implements List<NBTTag> {
 

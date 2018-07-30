@@ -42,13 +42,8 @@ public class BaseTag implements NBTTag {
         }
         final BaseTag other = (BaseTag) obj;
         if (header == null) {
-            if (other.header != null) {
-                return false;
-            }
-        } else if (!header.equals(other.header)) {
-            return false;
-        }
-        return true;
+            return other.header == null;
+        } else return header.equals(other.header);
     }
 
     @Override

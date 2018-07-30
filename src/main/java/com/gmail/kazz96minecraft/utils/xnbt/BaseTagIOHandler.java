@@ -228,7 +228,7 @@ abstract class BaseTagIOHandler implements XNBT.TagIOHandler {
             return builder.build(type, name, payload);
         }
 
-        private Object tagToObject(final NBTTag tag, final Class<? extends Object> clazz) throws IOException {
+        private Object tagToObject(final NBTTag tag, final Class<? extends Object> clazz) {
 
             if (clazz.isAssignableFrom(NBTTag.class)) {
 

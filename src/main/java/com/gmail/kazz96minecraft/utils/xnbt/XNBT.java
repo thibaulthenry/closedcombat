@@ -22,21 +22,21 @@ import com.gmail.kazz96minecraft.utils.xnbt.types.NBTTag.BaseType;
 
 public final class XNBT {
 
-    public static interface TagBuilder {
+    public interface TagBuilder {
 
         NBTTag build(byte type, String name, Object payload);
 
     }
 
-    public static interface TagIOHandler extends TagBuilder, TagPayloadReader, TagPayloadWriter {}
+    public interface TagIOHandler extends TagBuilder, TagPayloadReader, TagPayloadWriter {}
 
-    public static interface TagPayloadReader {
+    public interface TagPayloadReader {
 
         Object read(NBTInputStream in) throws IOException;
 
     }
 
-    public static interface TagPayloadWriter {
+    public interface TagPayloadWriter {
 
         void write(Object payload, NBTOutputStream out) throws IOException;
 

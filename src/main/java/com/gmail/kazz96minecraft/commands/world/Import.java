@@ -1,7 +1,6 @@
 package com.gmail.kazz96minecraft.commands.world;
 
 import com.gmail.kazz96minecraft.commands.AbstractCommand;
-import com.gmail.kazz96minecraft.commands.Commands;
 import com.gmail.kazz96minecraft.utils.MapDatas;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -17,8 +16,6 @@ import org.spongepowered.api.world.WorldArchetype;
 import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 public class Import extends AbstractCommand {
 
@@ -49,7 +46,7 @@ public class Import extends AbstractCommand {
                 .enabled(true)
                 .generateSpawnOnLoad(false)
                 .keepsSpawnLoaded(true)
-                .loadsOnStartup(true);
+                .loadsOnStartup(false);
 
         WorldArchetype settings = mapBuilder.build(worldName, worldName);
 
@@ -74,12 +71,7 @@ public class Import extends AbstractCommand {
                 .permission("closedcombat.usage.world.import")
                 .description(Text.of("Import World"))
                 .arguments(GenericArguments.string(Text.of("world-name")))
-                .executor(Commands.IMPORT.get())
+                .executor(instance)
                 .build();
-    }
-
-    @Override
-    public List<String> getAliases() {
-        return Arrays.asList("import", "imp");
     }
 }

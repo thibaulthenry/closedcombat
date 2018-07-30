@@ -1,7 +1,6 @@
 package com.gmail.kazz96minecraft.commands.world;
 
 import com.gmail.kazz96minecraft.commands.AbstractCommand;
-import com.gmail.kazz96minecraft.commands.Commands;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -16,8 +15,6 @@ import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 public class Unload extends AbstractCommand {
@@ -81,12 +78,7 @@ public class Unload extends AbstractCommand {
                 .permission("closedcombat.usage.world.unload")
                 .description(Text.of("Unload World"))
                 .arguments(GenericArguments.string(Text.of("world-name")))
-                .executor(Commands.UNLOAD.get())
+                .executor(instance)
                 .build();
-    }
-
-    @Override
-    public List<String> getAliases() {
-        return Arrays.asList("unload", "uld");
     }
 }

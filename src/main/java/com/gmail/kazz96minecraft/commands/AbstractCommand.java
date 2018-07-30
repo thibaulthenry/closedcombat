@@ -7,14 +7,16 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
 
-import java.util.List;
-
 @SuppressWarnings("NullableProblems")
 public abstract class AbstractCommand implements CommandExecutor {
+
+    protected AbstractCommand instance;
+
+    protected AbstractCommand() {
+        instance = this;
+    }
 
     public abstract CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException;
 
     public abstract CommandSpec getCommandSpec();
-
-    public abstract List<String> getAliases();
 }

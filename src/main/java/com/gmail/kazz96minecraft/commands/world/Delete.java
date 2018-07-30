@@ -1,7 +1,6 @@
 package com.gmail.kazz96minecraft.commands.world;
 
 import com.gmail.kazz96minecraft.commands.AbstractCommand;
-import com.gmail.kazz96minecraft.commands.Commands;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -13,8 +12,6 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.storage.WorldProperties;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -62,12 +59,7 @@ public class Delete extends AbstractCommand {
                 .permission("closedcombat.usage.world.delete")
                 .description(Text.of("Delete World"))
                 .arguments(GenericArguments.string(Text.of("world-name")))
-                .executor(Commands.DELETE.get())
+                .executor(instance)
                 .build();
-    }
-
-    @Override
-    public List<String> getAliases() {
-        return Arrays.asList("delete", "dlt");
     }
 }
