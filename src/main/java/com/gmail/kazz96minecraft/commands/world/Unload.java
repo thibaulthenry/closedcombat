@@ -20,54 +20,38 @@ import java.util.Optional;
 public class Unload extends AbstractCommand {
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        if (!arguments.<String>getOne("world-name").isPresent()) {
-            throw new CommandException(Text.of(TextColors.RED, arguments, " plz worldname"));
-        }
-        String worldName = arguments.<String>getOne("world-name").get();
+        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+        String worldName = worldProperties.getWorldName();
 
-        Optional<WorldProperties> optionalProperties = Sponge.getServer().getWorldProperties(worldName);
-
-        if (!optionalProperties.isPresent()) {
-            throw new CommandException(Text.of(TextColors.RED, worldName, " does not exist"));
-        }
-        WorldProperties properties = optionalProperties.get();
-
-        Optional<World> optionalWorld = Sponge.getServer().getWorld(worldName);
-
-        if (!optionalWorld.isPresent()) {
-            throw new CommandException(Text.of(TextColors.RED, worldName, " is already unloaded"), false);
-        }
-
-        World world = optionalWorld.get();
+        World world = Sponge.getServer().getWorld(worldProperties.getUniqueId()).orElseThrow(() -> new CommandException(Text.of(worldName, " isn't loaded")));
 
         if (Sponge.getServer().getDefaultWorldName().equals(worldName)) {
-            throw new CommandException(Text.of(TextColors.RED, "You cannot unload the default world"), false);
+            throw new CommandException(Text.of("Default world cannot be unloaded"));
         }
 
-        World defaultWorld = Sponge.getServer().getWorld(Sponge.getServer().getDefaultWorld().get().getWorldName()).get();
-
-        properties.setLoadOnStartup(false);
-        properties.setEnabled(false);
-
-        Sponge.getServer().saveWorldProperties(properties);
+        World defaultWorld = Sponge.getServer().getWorld(Sponge.getServer().getDefaultWorldName()).orElseThrow(() -> new CommandException(Text.of("An error occurs while catching the default world")));
 
         world.getEntities().stream()
                 .filter(entity -> entity instanceof Player)
                 .map(entity -> (Player) entity)
                 .forEach(player -> player.setLocation(defaultWorld.getSpawnLocation()));
 
+        worldProperties.setLoadOnStartup(false);
+        worldProperties.setEnabled(false);
+        Sponge.getServer().saveWorldProperties(worldProperties);
+
         if (!Sponge.getServer().unloadWorld(world)) {
-            throw new CommandException(Text.of(TextColors.RED, "Could not unload ", properties.getWorldName()), false);
+            throw new CommandException(Text.of("An error occurs while unloading ", worldName));
         }
 
         try {
             world.save();
         } catch (IOException e) {
             e.printStackTrace();
-            throw new CommandException(Text.of(TextColors.RED, "Saving world before unload faileeed"), false);
+            throw new CommandException(Text.of("An error occurs while saving ", worldName, " after unloading"));
         }
 
-        source.sendMessage(Text.of(TextColors.DARK_GREEN, properties.getWorldName(), " unloaded successfully"));
+        source.sendMessage(Text.of(TextColors.GREEN, worldName, " has been unloaded successfully"));
 
         return CommandResult.success();
     }
@@ -75,9 +59,9 @@ public class Unload extends AbstractCommand {
     @Override
     public CommandSpec getCommandSpec() {
         return CommandSpec.builder()
-                .permission("closedcombat.usage.world.unload")
-                .description(Text.of("Unload World"))
-                .arguments(GenericArguments.string(Text.of("world-name")))
+                .permission("closedcombat.world.unload")
+                .description(Text.of("Unload an existing world"))
+                .arguments(GenericArguments.string(Text.of("world")))
                 .executor(instance)
                 .build();
     }

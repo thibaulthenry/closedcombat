@@ -14,37 +14,27 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 
-import java.util.Optional;
-
 public class Teleport extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        if (!arguments.<String>getOne("mapName").isPresent()) {
-            throw new CommandException(Text.of("todo pas du tout d'arg")/*TODO*/);
+        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+
+        World world = Sponge.getServer().getWorld(worldProperties.getUniqueId()).orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+
+        Player player = arguments.<Player>getOne("player").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+
+        if (!arguments.<Double>getOne("x").isPresent()) {
+            Location<World> spawnLocation = world.getSpawnLocation();
+            player.setLocation(spawnLocation);
+            return CommandResult.success();
         }
 
-        if (!(source instanceof Player)) {
-            throw new CommandException(Text.of("todo usage")/*TODO*/);
-        }
-        Player player = (Player) source;
-        String mapName = arguments.<String>getOne("mapName").get();
+        double x = arguments.<Double>getOne("x").get();
+        double y = arguments.<Double>getOne("y").orElseThrow(() -> new CommandException(Text.of("Missing <y> & <z> coordinates")));
+        double z = arguments.<Double>getOne("z").orElseThrow(() -> new CommandException(Text.of("Missing <z> coordinates")));
 
-        Optional<WorldProperties> optionalProperties = Sponge.getServer().getWorldProperties(mapName);
-
-        if (!optionalProperties.isPresent()) {
-            throw new CommandException(Text.of("todo usage")/*TODO*/);
-        }
-        WorldProperties properties = optionalProperties.get();
-
-        Optional<World> optionalWorld = Sponge.getServer().getWorld(mapName);
-
-        if (!optionalWorld.isPresent()) {
-            throw new CommandException(Text.of("todo usage")/*TODO*/);
-        }
-        World world = optionalWorld.get();
-
-        Location<World> location = world.getSpawnLocation();
+        Location<World> location = world.getLocation(x, y, z);
         player.setLocation(location);
 
         return CommandResult.success();
@@ -53,9 +43,15 @@ public class Teleport extends AbstractCommand {
     @Override
     public CommandSpec getCommandSpec() {
         return CommandSpec.builder()
-                .permission("closedcombat.usage.tp")
-                .description(Text.of("Teleport a player to a Closed Combat Map"))
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("mapName"))))
+                .permission("closedcombat.world.teleport")
+                .description(Text.of("Teleport a player to a specified world"))
+                .arguments(
+                        GenericArguments.world(Text.of("world")),
+                        GenericArguments.playerOrSource(Text.of("player")),
+                        GenericArguments.optional(GenericArguments.doubleNum(Text.of("x"))),
+                        GenericArguments.optional(GenericArguments.doubleNum(Text.of("y"))),
+                        GenericArguments.optional(GenericArguments.doubleNum(Text.of("z")))
+                )
                 .executor(instance)
                 .build();
     }

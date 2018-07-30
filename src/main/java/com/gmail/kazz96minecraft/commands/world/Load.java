@@ -22,47 +22,30 @@ public class Load extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        if (!arguments.<String>getOne("world-name").isPresent()) {
-            throw new CommandException(Text.of(TextColors.RED, arguments, " plz worldname"));
-        }
-        String worldName = arguments.<String>getOne("world-name").get();
-        Optional<WorldProperties> optionalWorld = Sponge.getServer().getWorldProperties(worldName);
-
-        if (!optionalWorld.isPresent()) {
-            throw new CommandException(Text.of("todo usage 1")/*TODO*/);
-        }
-        WorldProperties world = optionalWorld.get();
-
-        if (Sponge.getServer().getWorld(world.getUniqueId()).isPresent()) {
-            throw new CommandException(Text.of("todo usage 2")/*TODO*/);
-        }
-
+        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+        String worldName = worldProperties.getWorldName();
         MapDatas mapDatas = new MapDatas(worldName);
 
+        if (Sponge.getServer().getWorld(worldProperties.getUniqueId()).isPresent()) {
+            throw new CommandException(Text.of(worldName, " is already loaded"));
+        }
+
         if (!mapDatas.levelDatExists()) {
-            throw new CommandException(Text.of("todo usage 3")/*TODO*/);
+            throw new CommandException(Text.of("Unable to find the ", worldName, "'s level.dat file"));
         }
-
-        if (!mapDatas.levelSpongeDatExists()) {
-            source.sendMessage(Text.of("todo usage 4")/*TODO*/);
-            return CommandResult.success();
-        }
-
-        source.sendMessage(Text.of("todo usage 5")/*TODO*/);
 
         Task.builder().delayTicks(20).execute(c -> {
-            Optional<World> load = Sponge.getServer().loadWorld(world);
+            Optional<World> loadingWorld = Sponge.getServer().loadWorld(worldProperties);
 
-            if (!load.isPresent()) {
-                source.sendMessage(Text.of("todo usage 6")/*TODO*/);
+            if (!loadingWorld.isPresent()) {
+                source.sendMessage(Text.of(TextColors.RED, "An error occurs while loading", worldName));
                 return;
             }
 
-            load.get().getProperties().setLoadOnStartup(true);
+            worldProperties.setLoadOnStartup(true);
+            Sponge.getServer().saveWorldProperties(worldProperties);
 
-            Sponge.getServer().saveWorldProperties(world);
-
-            source.sendMessage(Text.of(TextColors.DARK_GREEN, worldName, " loaded successfully"));
+            source.sendMessage(Text.of(TextColors.GREEN, worldName, " has been loaded successfully"));
         }).submit(ClosedCombat.getInstance().getPlugin());
 
         return CommandResult.success();
@@ -71,9 +54,9 @@ public class Load extends AbstractCommand {
     @Override
     public CommandSpec getCommandSpec() {
         return CommandSpec.builder()
-                .permission("closedcombat.usage.world.load")
-                .description(Text.of("Load World"))
-                .arguments(GenericArguments.string(Text.of("world-name")))
+                .permission("closedcombat.world.load")
+                .description(Text.of("Load a world on the server"))
+                .arguments(GenericArguments.world(Text.of("world")))
                 .executor(instance)
                 .build();
     }

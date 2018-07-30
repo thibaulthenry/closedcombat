@@ -7,7 +7,7 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
 
-@SuppressWarnings("NullableProblems")
+
 public abstract class AbstractCommand implements CommandExecutor {
 
     protected AbstractCommand instance;
@@ -16,6 +16,7 @@ public abstract class AbstractCommand implements CommandExecutor {
         instance = this;
     }
 
+    @SuppressWarnings("NullableProblems")
     public abstract CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException;
 
     public abstract CommandSpec getCommandSpec();

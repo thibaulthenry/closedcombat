@@ -9,7 +9,6 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.action.HoverAction;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.storage.WorldProperties;
@@ -64,7 +63,7 @@ public class List extends AbstractCommand {
     @Override
     public CommandSpec getCommandSpec() {
         return CommandSpec.builder()
-                .permission("closedcombat.usage.world.list")
+                .permission("closedcombat.world.list")
                 .description(Text.of("Show the list of loaded and unloaded worlds"))
                 .executor(instance)
                 .build();
@@ -73,9 +72,9 @@ public class List extends AbstractCommand {
     private String mapNetherEnd(String worldName) {
         switch (worldName) {
             case "DIM-1":
-                return "Nether";
+                return "The Nether";
             case "DIM1":
-                return "End";
+                return "The End";
             default:
                 return worldName;
         }

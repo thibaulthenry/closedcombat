@@ -11,40 +11,27 @@ import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.world.World;
-import org.spongepowered.api.world.storage.WorldProperties;
-
-import java.util.Optional;
 
 public class Extract extends AbstractCommand {
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        if (!arguments.<String>getOne("world-name").isPresent()) {
-            throw new CommandException(Text.of(TextColors.RED, arguments, " plz worldname"));
-        }
-        String worldName = arguments.<String>getOne("world-name").get();
+        String worldName = arguments.<String>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
 
         if (!Zip.doesBackupExists(worldName)) {
-            throw new CommandException(Text.of("pas de backup"));
+            throw new CommandException(Text.of("Unable to find ", worldName, "'s zip backup"));
         }
 
         if (Sponge.getServer().getDefaultWorldName().equals(worldName)) {
-            throw new CommandException(Text.of(TextColors.RED, "You cannot extract a default world backup"), false);
+            throw new CommandException(Text.of("Default world cannot be overwritten with a backup"));
         }
 
-        Optional<WorldProperties> optionalProperties = Sponge.getServer().getWorldProperties(worldName);
-
-        if (optionalProperties.isPresent()) {
-            Optional<World> optionalWorld = Sponge.getServer().getWorld(worldName);
-
-            if (optionalWorld.isPresent()) {
-                throw new CommandException(Text.of(TextColors.RED, worldName, " plz unload before extract"), false);
-            }
+        if (Sponge.getServer().getWorld(worldName).isPresent()) {
+            throw new CommandException(Text.of(worldName, " must be unloaded"));
         }
 
         Zip.unzipWorld(worldName);
 
-        source.sendMessage(Text.of(TextColors.DARK_GREEN, worldName, " extracted successfully"));
+        source.sendMessage(Text.of(TextColors.GREEN, worldName, " has been extracted successfully"));
 
         return CommandResult.success();
     }
@@ -52,9 +39,9 @@ public class Extract extends AbstractCommand {
     @Override
     public CommandSpec getCommandSpec() {
         return CommandSpec.builder()
-                .permission("closedcombat.usage.world.extract")
+                .permission("closedcombat.world.extract")
                 .description(Text.of("Extract Backuped World"))
-                .arguments(GenericArguments.string(Text.of("world-name")))
+                .arguments(GenericArguments.string(Text.of("world")))
                 .executor(instance)
                 .build();
     }

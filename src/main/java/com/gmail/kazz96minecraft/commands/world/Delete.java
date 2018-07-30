@@ -12,53 +12,36 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.storage.WorldProperties;
 
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public class Delete extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        if (!arguments.<String>getOne("world-name").isPresent()) {
-            throw new CommandException(Text.of(TextColors.RED, " plz worldname"));
-        }
+        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+        String worldName = worldProperties.getWorldName();
 
-        String worldName = arguments.<String>getOne("world-name").get();
-
-        Optional<WorldProperties> optionalWorld = Sponge.getServer().getWorldProperties(worldName);
-
-        if (!optionalWorld.isPresent()) {
-            throw new CommandException(Text.of(TextColors.RED, " does not exist"), false);
-        }
-        WorldProperties world = optionalWorld.get();
-
-        if (Sponge.getServer().getWorld(world.getWorldName()).isPresent()) {
-            throw new CommandException(Text.of(TextColors.RED, worldName, " must be unloaded before you can delete"), false);
+        if (Sponge.getServer().getWorld(worldName).isPresent()) {
+            throw new CommandException(Text.of(worldName, " must be unloaded before you can delete"));
         }
 
         try {
-            if (Sponge.getServer().deleteWorld(world).get()) {
+            Sponge.getServer().deleteWorld(worldProperties).get();
+            source.sendMessage(Text.of(TextColors.GREEN, worldName, " has been deleted successfully"));
 
-                source.sendMessage(Text.of(TextColors.DARK_GREEN, worldName, " deleted successfully"));
-
-                return CommandResult.success();
-            }
+            return CommandResult.success();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
-            throw new CommandException(Text.of(TextColors.RED, "Something went wrong. Check server log for details"), false);
+            throw new CommandException(Text.of("An error occurs while deleting ", worldName));
         }
-
-        source.sendMessage(Text.of(TextColors.RED, "Could not delete ", worldName));
-
-        return CommandResult.empty();
     }
 
     @Override
     public CommandSpec getCommandSpec() {
         return CommandSpec.builder()
-                .permission("closedcombat.usage.world.delete")
+                .permission("closedcombat.world.delete")
                 .description(Text.of("Delete World"))
-                .arguments(GenericArguments.string(Text.of("world-name")))
+                .arguments(GenericArguments.world(Text.of("world")))
                 .executor(instance)
                 .build();
     }

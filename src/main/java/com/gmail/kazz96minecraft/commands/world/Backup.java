@@ -11,42 +11,29 @@ import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.world.World;
-import org.spongepowered.api.world.storage.WorldProperties;
-
-import java.util.Optional;
 
 public class Backup extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        if (!arguments.<String>getOne("world-name").isPresent()) {
-            throw new CommandException(Text.of(TextColors.RED, " plz mapname"));
-        }
-
-        String worldName = arguments.<String>getOne("world-name").get();
+        String worldName = arguments.<String>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
 
         if (!Zip.doesWorldExists(worldName)) {
-            throw new CommandException(Text.of(TextColors.RED, worldName, " introuvable"), false);
+            throw new CommandException(Text.of("Unable to find ", worldName, "'s folder"));
         }
 
-        Optional<WorldProperties> optionalProperties = Sponge.getServer().getWorldProperties(worldName);
-
-        if (optionalProperties.isPresent()) {
-            Optional<World> optionalWorld = Sponge.getServer().getWorld(worldName);
-
-            if (optionalWorld.isPresent()) {
-                throw new CommandException(Text.of(TextColors.RED, worldName, " plz unload before backup"), false);
-            }
+        if (Sponge.getServer().getWorld(worldName).isPresent()) {
+            throw new CommandException(Text.of(worldName, " must be unloaded"));
         }
 
         try {
             Zip.zipWorld(worldName);
         } catch (Exception e) {
             e.printStackTrace();
+            throw new CommandException(Text.of("An error occurs while backuping ", worldName));
         }
 
-        source.sendMessage(Text.of(TextColors.DARK_GREEN, worldName, " backuped successfully"));
+        source.sendMessage(Text.of(TextColors.GREEN, worldName, " has been backuped successfully"));
 
         return CommandResult.success();
     }
@@ -54,9 +41,9 @@ public class Backup extends AbstractCommand {
     @Override
     public CommandSpec getCommandSpec() {
         return CommandSpec.builder()
-                .permission("closedcombat.usage.world.backup")
-                .description(Text.of("Backup World"))
-                .arguments(GenericArguments.string(Text.of("world-name")))
+                .permission("closedcombat.world.backup")
+                .description(Text.of("Backup a world as zip file"))
+                .arguments(GenericArguments.string(Text.of("world")))
                 .executor(instance)
                 .build();
     }

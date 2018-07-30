@@ -10,8 +10,8 @@ public class CCRegister {
 
     public CCRegister() {
         CommandSpec worldCommandSpec = CommandSpec.builder()
-                .extendedDescription(Text.of("Closed Combat world commands"))
-                .permission("closedcombat.usage.world")
+                .description(Text.of("Closed Combat world commands"))
+                .permission("closedcombat.world")
                 .child(new Backup().getCommandSpec(), "backup", "zip")
                 .child(new Delete().getCommandSpec(), "delete", "rm")
                 .child(new Extract().getCommandSpec(), "extract", "unzip")
@@ -22,14 +22,14 @@ public class CCRegister {
                 .build();
 
         CommandSpec mapCommandSpec = CommandSpec.builder()
-                .extendedDescription(Text.of("Closed Combat map commands"))
-                .permission("closedcombat.usage.map")
+                .description(Text.of("Closed Combat map commands"))
+                .permission("closedcombat.map")
                 .child(new Teleport().getCommandSpec(), "teleport", "tp", "go")
                 .build();
 
         commandSpec = CommandSpec.builder()
-                .extendedDescription(Text.of("Closed Combat plugin commands"))
-                .permission("closedcombat.usage")
+                .description(Text.of("Closed Combat commands"))
+                .permission("closedcombat")
                 .child(worldCommandSpec, "world", "w")
                 .child(mapCommandSpec, "map", "m")
                 .build();
