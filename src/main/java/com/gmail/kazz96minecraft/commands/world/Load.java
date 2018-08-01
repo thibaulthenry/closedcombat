@@ -34,6 +34,8 @@ public class Load extends AbstractCommand {
             throw new CommandException(Text.of("Unable to find the ", worldName, "'s level.dat file"));
         }
 
+        source.sendMessage(Text.of(TextColors.DARK_GRAY, worldName, " about to be loaded.."));
+
         Task.builder().delayTicks(20).execute(c -> {
             Optional<World> loadingWorld = Sponge.getServer().loadWorld(worldProperties);
 

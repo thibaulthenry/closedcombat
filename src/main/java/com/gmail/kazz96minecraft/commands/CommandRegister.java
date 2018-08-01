@@ -4,11 +4,11 @@ import com.gmail.kazz96minecraft.commands.world.*;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
 
-public class CCRegister {
+public class CommandRegister {
 
     private final CommandSpec commandSpec;
 
-    public CCRegister() {
+    public CommandRegister() {
         CommandSpec worldCommandSpec = CommandSpec.builder()
                 .description(Text.of("Closed Combat world commands"))
                 .permission("closedcombat.world")

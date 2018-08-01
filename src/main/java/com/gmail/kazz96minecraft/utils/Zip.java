@@ -88,6 +88,17 @@ public class Zip {
         }
     }
 
+    public static void deleteBackup(String worldName) {
+        if (!doesBackupExists(worldName)) {
+            return;
+        }
+
+        Path zipPath = Paths.get(backupsDirectory.getPath(), worldName + ".zip");
+        File zipBackup = new File(zipPath.toString());
+
+        zipBackup.delete();
+    }
+
     public static boolean doesBackupExists(String worldName) {
         return new File(backupsDirectory.getPath(), worldName + ".zip").exists();
     }

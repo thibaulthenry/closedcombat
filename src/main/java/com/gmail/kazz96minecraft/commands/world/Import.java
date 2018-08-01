@@ -16,6 +16,7 @@ import org.spongepowered.api.world.WorldArchetype;
 import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.io.IOException;
+import java.time.Instant;
 
 public class Import extends AbstractCommand {
 
@@ -24,17 +25,12 @@ public class Import extends AbstractCommand {
         String worldName = arguments.<String>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
         MapDatas mapDatas = new MapDatas(worldName);
 
-        if (Sponge.getServer().getWorld(worldName).isPresent()) {
-            throw new CommandException(Text.of(worldName, " is already loaded"));
-        }
-
         if (!mapDatas.levelDatExists()) {
             throw new CommandException(Text.of("Unable to find the ", worldName, "'s level.dat file"));
         }
 
         if (mapDatas.levelSpongeDatExists()) {
-            source.sendMessage(Text.of(worldName, " is already imported"));
-            return CommandResult.success();
+            throw new CommandException(Text.of(worldName, " is already imported"));
         }
 
         WorldArchetype.Builder worldArchetypeBuilder = WorldArchetype.builder()
@@ -45,7 +41,7 @@ public class Import extends AbstractCommand {
                 .keepsSpawnLoaded(true)
                 .loadsOnStartup(false);
 
-        WorldArchetype settings = worldArchetypeBuilder.build(worldName, worldName);
+        WorldArchetype settings = worldArchetypeBuilder.build(worldName + Instant.now(), worldName);
 
         WorldProperties worldProperties;
         try {

@@ -15,7 +15,6 @@ import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.io.IOException;
-import java.util.Optional;
 
 public class Unload extends AbstractCommand {
     @Override
@@ -61,7 +60,7 @@ public class Unload extends AbstractCommand {
         return CommandSpec.builder()
                 .permission("closedcombat.world.unload")
                 .description(Text.of("Unload an existing world"))
-                .arguments(GenericArguments.string(Text.of("world")))
+                .arguments(GenericArguments.world(Text.of("world")))
                 .executor(instance)
                 .build();
     }
