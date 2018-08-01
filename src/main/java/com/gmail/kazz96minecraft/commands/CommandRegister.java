@@ -1,5 +1,6 @@
 package com.gmail.kazz96minecraft.commands;
 
+import com.gmail.kazz96minecraft.commands.map.Give;
 import com.gmail.kazz96minecraft.commands.world.*;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
@@ -24,6 +25,7 @@ public class CommandRegister {
         CommandSpec mapCommandSpec = CommandSpec.builder()
                 .description(Text.of("Closed Combat map commands"))
                 .permission("closedcombat.map")
+                .child(new Give().getCommandSpec(), "give")
                 .child(new Teleport().getCommandSpec(), "teleport", "tp", "go")
                 .build();
 

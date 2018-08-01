@@ -2,7 +2,7 @@ package com.gmail.kazz96minecraft.commands.world;
 
 import com.gmail.kazz96minecraft.ClosedCombat;
 import com.gmail.kazz96minecraft.commands.AbstractCommand;
-import com.gmail.kazz96minecraft.utils.MapDatas;
+import com.gmail.kazz96minecraft.utils.WorldDatas;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -24,7 +24,7 @@ public class Load extends AbstractCommand {
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
         WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
         String worldName = worldProperties.getWorldName();
-        MapDatas mapDatas = new MapDatas(worldName);
+        WorldDatas mapDatas = new WorldDatas(worldName);
 
         if (Sponge.getServer().getWorld(worldProperties.getUniqueId()).isPresent()) {
             throw new CommandException(Text.of(worldName, " is already loaded"));

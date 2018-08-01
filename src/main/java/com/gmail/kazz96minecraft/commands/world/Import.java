@@ -1,7 +1,7 @@
 package com.gmail.kazz96minecraft.commands.world;
 
 import com.gmail.kazz96minecraft.commands.AbstractCommand;
-import com.gmail.kazz96minecraft.utils.MapDatas;
+import com.gmail.kazz96minecraft.utils.WorldDatas;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -23,7 +23,7 @@ public class Import extends AbstractCommand {
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
         String worldName = arguments.<String>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
-        MapDatas mapDatas = new MapDatas(worldName);
+        WorldDatas mapDatas = new WorldDatas(worldName);
 
         if (!mapDatas.levelDatExists()) {
             throw new CommandException(Text.of("Unable to find the ", worldName, "'s level.dat file"));
