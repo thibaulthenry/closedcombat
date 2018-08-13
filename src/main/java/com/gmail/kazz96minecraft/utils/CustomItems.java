@@ -13,18 +13,19 @@ import java.util.stream.Collectors;
 public enum CustomItems {
     CCSTICK(ItemStack.builder().itemType(ItemTypes.STICK).add(Keys.DISPLAY_NAME, Text.of("CCStick")).build());
 
-    private ItemStack item;
+    private final ItemStack item;
 
     CustomItems(ItemStack item) {
         this.item = item;
     }
 
-    public ItemStack get() {
-        return item;
+    public static Map<String, ItemStack> map() {
+        return Arrays.stream(CustomItems.values())
+                .collect(Collectors.toMap(customItem -> StringUtils.capitalize(customItem.name()), CustomItems::get));
     }
 
-    public static Map<String, ItemStack> map() {
-        return Arrays.stream(CustomItems.values()).collect(Collectors.toMap(customItem -> StringUtils.capitalize(customItem.name()),CustomItems::get));
+    private ItemStack get() {
+        return item;
     }
 
 }

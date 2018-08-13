@@ -19,7 +19,7 @@ import java.io.IOException;
 public class Unload extends AbstractCommand {
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(errorBySponge);
         String worldName = worldProperties.getWorldName();
 
         World world = Sponge.getServer().getWorld(worldProperties.getUniqueId()).orElseThrow(() -> new CommandException(Text.of(worldName, " isn't loaded")));
@@ -46,8 +46,7 @@ public class Unload extends AbstractCommand {
         try {
             world.save();
         } catch (IOException e) {
-            e.printStackTrace();
-            throw new CommandException(Text.of("An error occurs while saving ", worldName, " after unloading"));
+            throw new CommandException(Text.of("An error occurs while saving ", worldName, " after unloading"), e);
         }
 
         source.sendMessage(Text.of(TextColors.GREEN, worldName, " has been unloaded successfully"));

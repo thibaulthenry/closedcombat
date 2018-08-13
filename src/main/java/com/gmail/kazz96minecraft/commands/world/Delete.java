@@ -18,7 +18,7 @@ public class Delete extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(errorBySponge);
         String worldName = worldProperties.getWorldName();
 
         if (Sponge.getServer().getWorld(worldName).isPresent()) {
@@ -31,8 +31,7 @@ public class Delete extends AbstractCommand {
 
             return CommandResult.success();
         } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            throw new CommandException(Text.of("An error occurs while deleting ", worldName));
+            throw new CommandException(Text.of("An error occurs while deleting ", worldName), e);
         }
     }
 

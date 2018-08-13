@@ -18,11 +18,11 @@ public class Teleport extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(errorBySponge);
 
-        World world = Sponge.getServer().getWorld(worldProperties.getUniqueId()).orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+        World world = Sponge.getServer().getWorld(worldProperties.getUniqueId()).orElseThrow(errorBySponge);
 
-        Player player = arguments.<Player>getOne("player").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+        Player player = arguments.<Player>getOne("player").orElseThrow(errorBySponge);
 
         if (!arguments.<Double>getOne("x").isPresent()) {
             Location<World> spawnLocation = world.getSpawnLocation();

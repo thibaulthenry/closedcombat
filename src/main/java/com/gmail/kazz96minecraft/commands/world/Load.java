@@ -22,7 +22,7 @@ public class Load extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(errorBySponge);
         String worldName = worldProperties.getWorldName();
         WorldDatas mapDatas = new WorldDatas(worldName);
 
@@ -36,7 +36,7 @@ public class Load extends AbstractCommand {
 
         source.sendMessage(Text.of(TextColors.DARK_GRAY, worldName, " about to be loaded.."));
 
-        Task.builder().delayTicks(20).execute(c -> {
+        Task.builder().delayTicks(20).execute(() -> {
             Optional<World> loadingWorld = Sponge.getServer().loadWorld(worldProperties);
 
             if (!loadingWorld.isPresent()) {
@@ -48,7 +48,7 @@ public class Load extends AbstractCommand {
             Sponge.getServer().saveWorldProperties(worldProperties);
 
             source.sendMessage(Text.of(TextColors.GREEN, worldName, " has been loaded successfully"));
-        }).submit(ClosedCombat.getInstance().getPlugin());
+        }).submit(ClosedCombat.getInstance());
 
         return CommandResult.success();
     }

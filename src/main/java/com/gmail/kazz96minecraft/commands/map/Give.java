@@ -22,8 +22,8 @@ public class Give extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        Player player = arguments.<Player>getOne("player").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
-        ItemStack item = arguments.<ItemStack>getOne("item").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+        Player player = arguments.<Player>getOne("player").orElseThrow(errorBySponge);
+        ItemStack item = arguments.<ItemStack>getOne("item").orElseThrow(errorBySponge);
 
         Inventory hotbarInventory = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(Hotbar.class));
         Inventory mainInventory = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(MainPlayerInventory.class));
@@ -43,7 +43,7 @@ public class Give extends AbstractCommand {
     public CommandSpec getCommandSpec() {
         return CommandSpec.builder()
                 .permission("closedcombat.map.give")
-                .description(Text.of("Give a custom Closed Combat Item"))
+                .description(Text.of("Give a custom Closed Combat item"))
                 .arguments(
                         GenericArguments.playerOrSource(Text.of("player")),
                         GenericArguments.choices(Text.of("item"), CustomItems.map())

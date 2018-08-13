@@ -15,7 +15,7 @@ import org.spongepowered.api.text.format.TextColors;
 public class Extract extends AbstractCommand {
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        String worldName = arguments.<String>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+        String worldName = arguments.<String>getOne("world").orElseThrow(errorBySponge);
 
         if (!Zip.doesBackupExists(worldName)) {
             throw new CommandException(Text.of("Unable to find ", worldName, "'s zip backup"));

@@ -16,7 +16,7 @@ public class Backup extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        String worldName = arguments.<String>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+        String worldName = arguments.<String>getOne("world").orElseThrow(errorBySponge);
 
         if (!Zip.doesWorldExists(worldName)) {
             throw new CommandException(Text.of("Unable to find ", worldName, "'s folder"));
@@ -29,8 +29,7 @@ public class Backup extends AbstractCommand {
         try {
             Zip.zipWorld(worldName);
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new CommandException(Text.of("An error occurs while backuping ", worldName));
+            throw new CommandException(Text.of("An error occurs while backuping ", worldName), e);
         }
 
         source.sendMessage(Text.of(TextColors.GREEN, worldName, " has been backuped successfully"));

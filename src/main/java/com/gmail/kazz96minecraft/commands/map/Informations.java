@@ -1,0 +1,76 @@
+package com.gmail.kazz96minecraft.commands.map;
+
+import com.gmail.kazz96minecraft.commands.AbstractCommand;
+import com.gmail.kazz96minecraft.elements.Map;
+import com.gmail.kazz96minecraft.elements.serializers.MapSerializer;
+import org.spongepowered.api.command.CommandException;
+import org.spongepowered.api.command.CommandResult;
+import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.GenericArguments;
+import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.service.pagination.PaginationList;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.action.TextActions;
+import org.spongepowered.api.text.format.TextColors;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class Informations extends AbstractCommand {
+
+    @Override
+    public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
+        if (arguments.<Map>getOne("map").isPresent()) {
+            source.sendMessage(getMapInformations(arguments.<Map>getOne("map").get()));
+
+            return CommandResult.success();
+        }
+
+        PaginationList.Builder builder = PaginationList.builder();
+
+        List<Text> registeredMaps = MapSerializer.getMapList().stream()
+                .map(map -> Text.builder(map.getName())
+                        .color(TextColors.GREEN)
+                        .onHover(TextActions.showText(getMapInformations(map)))
+                        .build()
+                )
+                .collect(Collectors.toList());
+
+        if (registeredMaps.size() != 0) {
+            builder.title(Text.of("Closed Combat Maps"))
+                    .contents(registeredMaps)
+                    .build()
+                    .sendTo(source);
+        } else {
+            throw new CommandException(Text.of("There is no Closed Combat map registered on this server"));
+        }
+
+        return CommandResult.success();
+    }
+
+    private Text getMapInformations(Map map) {
+        return Text.builder()
+                .append(Text.of("Linked world : "))
+                .append(Text.of(TextColors.GRAY, map.getLinkedWorld().isPresent() ? map.getLinkedWorld().get().getName() : "None (unloaded or non-existent)", "\n"))
+                .append(Text.of("Spawn number : "))
+                .append(Text.of(TextColors.GRAY, map.getSpawnList().size(), "\n"))
+                .append(Text.of("Total spawns capacity : "))
+                .append(Text.of(TextColors.GRAY, map.getTotalSpawnsCapacity(), "\n"))
+                .build();
+    }
+
+    @Override
+    public CommandSpec getCommandSpec() {
+        return CommandSpec.builder()
+                .permission("closedcombat.map.informations")
+                .description(Text.of("Show informations about a registered Closed Combat map"))
+                .arguments(
+                        GenericArguments.optional(
+                                GenericArguments.choices(Text.of("map"), MapSerializer.getMapMap()) //todo load trop tot
+                        )
+                )
+                .executor(instance)
+                .build();
+    }
+}

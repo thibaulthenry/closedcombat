@@ -1,7 +1,7 @@
 package com.gmail.kazz96minecraft.listeners.block;
 
-import com.gmail.kazz96minecraft.utils.MapMaker;
-import org.spongepowered.api.data.manipulator.mutable.DisplayNameData;
+import com.gmail.kazz96minecraft.elements.Map;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
@@ -13,8 +13,6 @@ import org.spongepowered.api.world.World;
 
 @SuppressWarnings("unused")
 public class CCStickListener {
-
-    private static long timeBuffer;
 
     @Listener
     public void onCCStickUsage(InteractBlockEvent event) {
@@ -28,43 +26,35 @@ public class CCStickListener {
             return;
         }
 
-        double deltaAfterLastEvent = System.currentTimeMillis() - timeBuffer;
-
-        if (deltaAfterLastEvent < 500) {
-            return;
-        }
-
         Boolean CCStickMainHand = player.getItemInHand(HandTypes.MAIN_HAND)
                 .filter(itemStack -> {
-                    if (!itemStack.getOrCreate(DisplayNameData.class).isPresent()) {
-                        return false;
-                    }
-
-                    DisplayNameData displayNameData = itemStack.getOrCreate(DisplayNameData.class).get();
-
-                    return itemStack.getType().getName().equals("minecraft:stick") && displayNameData.displayName().get().equals(Text.of("CCStick"));
+                    Text displayName = itemStack.get(Keys.DISPLAY_NAME).orElse(Text.of("Not a CCStick"));
+                    return itemStack.getType().getName().equals("minecraft:stick") && displayName.equals(Text.of("CCStick"));
                 })
                 .isPresent();
 
-        if (!CCStickMainHand) {
+        if (!CCStickMainHand || !event.getTargetBlock().getLocation().isPresent()) {
             return;
         }
 
-        if (!event.getTargetBlock().getLocation().isPresent()) {
-            return;
-        }
+        event.setCancelled(true);
 
         Location<World> blockLocation = event.getTargetBlock().getLocation().get();
 
         if (event instanceof InteractBlockEvent.Primary) {
-            MapMaker.leftBlockMarker = blockLocation;
+            if (Map.leftBlockMarker != null && Map.leftBlockMarker.getBlockPosition().equals(blockLocation.getBlockPosition())) {
+                return;
+            }
+
+            Map.leftBlockMarker = blockLocation;
             player.sendMessage(Text.of(TextColors.GOLD, "Left Marker has been set to ", blockLocation.getExtent().getName(), " at ", blockLocation.getPosition()));
         } else {
-            MapMaker.rightBlockMarker = blockLocation;
+            if (Map.rightBlockMarker != null && Map.rightBlockMarker.getBlockPosition().equals(blockLocation.getBlockPosition())) {
+                return;
+            }
+
+            Map.rightBlockMarker = blockLocation;
             player.sendMessage(Text.of(TextColors.YELLOW, "Right Marker has been set to ", blockLocation.getExtent().getName(), " at ", blockLocation.getPosition()));
         }
-
-        event.setCancelled(true);
-        timeBuffer = System.currentTimeMillis();
     }
 }

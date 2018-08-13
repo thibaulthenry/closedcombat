@@ -1,8 +1,9 @@
 package com.gmail.kazz96minecraft.utils;
 
-import com.gmail.kazz96minecraft.utils.xnbt.XNBT;
-import com.gmail.kazz96minecraft.utils.xnbt.types.CompoundTag;
-import com.gmail.kazz96minecraft.utils.xnbt.types.NBTTag;
+import com.gmail.kazz96minecraft.ClosedCombat;
+import net.obnoxint.xnbt.XNBT;
+import net.obnoxint.xnbt.types.CompoundTag;
+import net.obnoxint.xnbt.types.NBTTag;
 import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.GeneratorType;
@@ -17,18 +18,18 @@ import java.util.Optional;
 
 public class WorldDatas {
 
-    private final String mapName;
-    private final File levelDat;
-    private final File levelSpongeDat;
+    private final String worldName;
     private boolean levelDatExists = false;
     private boolean levelSpongeDatExists = false;
     private CompoundTag rootTag;
     private GeneratorType generatorType;
 
     public WorldDatas(String worldName) {
-        this.mapName = worldName;
+        this.worldName = worldName;
         String defaultWorldName = Sponge.getServer().getDefaultWorldName();
 
+        File levelDat;
+        File levelSpongeDat;
         if (defaultWorldName.equalsIgnoreCase(worldName)) {
             levelDat = new File(worldName, "level.dat");
             levelSpongeDat = new File(worldName, "level_sponge.dat");
@@ -43,17 +44,17 @@ public class WorldDatas {
 
         if (levelDat.exists()) {
             levelDatExists = true;
-            init();
+            init(levelDat);
         }
     }
 
-    private void init() {
+    private void init(File levelDat) {
         List<NBTTag> tagList;
 
         try {
             tagList = XNBT.loadTags(levelDat);
         } catch (IOException e) {
-            e.printStackTrace();
+            ClosedCombat.getInstance().getLogger().error("An error occurs while initializing " + worldName);
             return;
         }
 
@@ -88,10 +89,6 @@ public class WorldDatas {
                 .ifPresent(generatorType -> this.generatorType = generatorType);
     }
 
-    public String getMapName() {
-        return mapName;
-    }
-
     public boolean levelDatExists() {
         return levelDatExists;
     }
@@ -112,7 +109,7 @@ public class WorldDatas {
         LARGE_BIOMES(GeneratorTypes.LARGE_BIOMES),
         OVERWORLD(GeneratorTypes.OVERWORLD);
 
-        private GeneratorType generatorTypeEquivalence;
+        private final GeneratorType generatorTypeEquivalence;
 
         CCGeneratorTypes(GeneratorType generatorTypeEquivalence) {
             this.generatorTypeEquivalence = generatorTypeEquivalence;

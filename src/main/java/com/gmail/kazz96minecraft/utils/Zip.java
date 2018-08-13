@@ -1,12 +1,16 @@
 package com.gmail.kazz96minecraft.utils;
 
-import org.spongepowered.api.Sponge;
+import com.gmail.kazz96minecraft.ClosedCombat;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -14,12 +18,9 @@ import java.util.zip.ZipOutputStream;
 
 public class Zip {
 
-    private static File backupsDirectory;
-    private static File worldsDirectory;
-
     public static void zipWorld(String worldName) throws Exception {
-        Path sourceFolderPath = Paths.get(worldsDirectory.getPath(), worldName);
-        Path zipPath = Paths.get(backupsDirectory.getPath(), worldName + ".zip");
+        Path sourceFolderPath = Paths.get(Storage.worldsDirectory.getPath(), worldName);
+        Path zipPath = Paths.get(Storage.backupsDirectory.getPath(), worldName + ".zip");
 
         ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipPath.toFile()));
         Files.walkFileTree(sourceFolderPath, new SimpleFileVisitor<Path>() {
@@ -37,12 +38,12 @@ public class Zip {
     }
 
     public static void unzipWorld(String worldName) {
-        Path sourceFolderPath = Paths.get(worldsDirectory.getPath(), worldName);
-        Path zipPath = Paths.get(backupsDirectory.getPath(), worldName + ".zip");
+        Path sourceFolderPath = Paths.get(Storage.worldsDirectory.getPath(), worldName);
+        Path zipPath = Paths.get(Storage.backupsDirectory.getPath(), worldName + ".zip");
 
         File worldFolder = new File(sourceFolderPath.toString());
 
-        if(!worldFolder.exists()) {
+        if (!worldFolder.exists()) {
             worldFolder.mkdirs();
         } else {
             worldFolder.delete();
@@ -56,7 +57,7 @@ public class Zip {
             ZipInputStream zipInputStream = new ZipInputStream(fileInputStream);
             ZipEntry zipEntry = zipInputStream.getNextEntry();
 
-            while(zipEntry != null){
+            while (zipEntry != null) {
                 String fileName = zipEntry.getName();
                 File newFile = new File(sourceFolderPath.toString() + File.separator + fileName);
 
@@ -75,35 +76,15 @@ public class Zip {
             zipInputStream.close();
             fileInputStream.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            ClosedCombat.getInstance().getLogger().error("An error occurs while extracting " + worldName, e);
         }
-    }
-
-    public static void initBackuping() {
-        backupsDirectory = new File("mods/closedcombat/backup");
-        worldsDirectory = new File(Sponge.getGame().getGameDirectory().toAbsolutePath() + File.separator + Sponge.getServer().getDefaultWorldName());
-
-        if (!backupsDirectory.isDirectory()) {
-            backupsDirectory.mkdirs();
-        }
-    }
-
-    public static void deleteBackup(String worldName) {
-        if (!doesBackupExists(worldName)) {
-            return;
-        }
-
-        Path zipPath = Paths.get(backupsDirectory.getPath(), worldName + ".zip");
-        File zipBackup = new File(zipPath.toString());
-
-        zipBackup.delete();
     }
 
     public static boolean doesBackupExists(String worldName) {
-        return new File(backupsDirectory.getPath(), worldName + ".zip").exists();
+        return new File(Storage.backupsDirectory.getPath(), worldName + ".zip").exists();
     }
 
     public static boolean doesWorldExists(String worldName) {
-        return new File(worldsDirectory.getPath(), worldName).exists();
+        return new File(Storage.worldsDirectory.getPath(), worldName).exists();
     }
 }

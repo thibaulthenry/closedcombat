@@ -22,7 +22,7 @@ public class Import extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        String worldName = arguments.<String>getOne("world").orElseThrow(() -> new CommandException(Text.of("Error message handled by Sponge")));
+        String worldName = arguments.<String>getOne("world").orElseThrow(errorBySponge);
         WorldDatas mapDatas = new WorldDatas(worldName);
 
         if (!mapDatas.levelDatExists()) {
@@ -47,8 +47,7 @@ public class Import extends AbstractCommand {
         try {
             worldProperties = Sponge.getServer().createWorldProperties(worldName, settings);
         } catch (IOException e) {
-            e.printStackTrace();
-            throw new CommandException(Text.of("An error occurs while creating ", worldName, "'s properties"));
+            throw new CommandException(Text.of("An error occurs while creating ", worldName, "'s properties"), e);
         }
 
         Sponge.getServer().saveWorldProperties(worldProperties);
