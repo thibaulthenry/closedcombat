@@ -18,7 +18,7 @@ public class Create extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        String mapName = arguments.<String>getOne("name").orElseThrow(errorBySponge);
+        String mapName = arguments.<String>getOne("name").orElseThrow(supplyError("Please insert a valid map name"));
 
         if (Map.leftBlockMarker == null || Map.rightBlockMarker == null) {
             throw new CommandException(Text.of("CCStick's markers must be set before creating a map"));
@@ -29,12 +29,15 @@ public class Create extends AbstractCommand {
         }
 
         Task.builder().async().execute(() -> {
-            if (MapSerializer.serialize(new Map(mapName))) {
-                source.sendMessage(Text.of(TextColors.GREEN, mapName, " has been created successfully"));
+            Map map = new Map(mapName);
+
+            if (!MapSerializer.getInstance().serialize(map)) {
+                source.sendMessage(Text.of(TextColors.RED, "An error occurs while creating ", mapName, "'s properties file"));
                 return;
             }
 
-            source.sendMessage(Text.of(TextColors.RED, "An error occurs while creating ", mapName, "'s properties file"));
+            MapSerializer.getInstance().getList().add(map);
+            source.sendMessage(Text.of(TextColors.GREEN, mapName, " has been created successfully"));
         }).submit(ClosedCombat.getInstance());
 
         return CommandResult.success();

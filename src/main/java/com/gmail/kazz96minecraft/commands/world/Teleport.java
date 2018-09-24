@@ -18,11 +18,11 @@ public class Teleport extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(errorBySponge);
+        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(supplyError("Please insert a valid world name"));
 
-        World world = Sponge.getServer().getWorld(worldProperties.getUniqueId()).orElseThrow(errorBySponge);
+        World world = Sponge.getServer().getWorld(worldProperties.getUniqueId()).orElseThrow(supplyError("Please insert a valid world name"));
 
-        Player player = arguments.<Player>getOne("player").orElseThrow(errorBySponge);
+        Player player = arguments.<Player>getOne("player").orElseThrow(supplyError("Please insert a valid player name"));
 
         if (!arguments.<Double>getOne("x").isPresent()) {
             Location<World> spawnLocation = world.getSpawnLocation();
@@ -35,7 +35,7 @@ public class Teleport extends AbstractCommand {
         double z = arguments.<Double>getOne("z").orElseThrow(() -> new CommandException(Text.of("Missing <z> coordinates")));
 
         Location<World> location = world.getLocation(x, y, z);
-        player.setLocation(location);
+        player.setLocation(location.add(0.5, 0.5, 0.5));
 
         return CommandResult.success();
     }

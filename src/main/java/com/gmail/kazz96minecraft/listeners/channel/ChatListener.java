@@ -2,6 +2,7 @@ package com.gmail.kazz96minecraft.listeners.channel;
 
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
@@ -14,13 +15,7 @@ import java.time.format.DateTimeFormatter;
 public class ChatListener {
 
     @Listener
-    public void onPlayerSendMessage(MessageChannelEvent.Chat event) {
-        if (!(event.getSource() instanceof Player)) {
-            return;
-        }
-
-        Player player = (Player) event.getSource();
-
+    public void onPlayerSendMessage(MessageChannelEvent.Chat event, @First Player player) {
         Text message = Text.builder()
                 .append(Text.of(TextColors.DARK_GRAY, "<"))
                 .append(

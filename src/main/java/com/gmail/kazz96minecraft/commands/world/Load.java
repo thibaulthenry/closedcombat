@@ -22,7 +22,7 @@ public class Load extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(errorBySponge);
+        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(supplyError("Please insert a valid world name"));
         String worldName = worldProperties.getWorldName();
         WorldDatas mapDatas = new WorldDatas(worldName);
 

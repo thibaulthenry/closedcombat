@@ -1,77 +1,31 @@
 package com.gmail.kazz96minecraft.elements.serializers;
 
-import com.gmail.kazz96minecraft.ClosedCombat;
 import com.gmail.kazz96minecraft.elements.Map;
 import com.gmail.kazz96minecraft.utils.Storage;
-import com.google.common.io.Files;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class MapSerializer {
+public class MapSerializer extends AbstractSerializer<Map> {
 
-    private static List<Map> mapList = new ArrayList<>();
+    private static final MapSerializer instance = new MapSerializer();
 
-    private static Optional<Map> deserialize(File mapFile) {
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(mapFile));
-
-            Gson gson = new Gson();
-            Map map = gson.fromJson(bufferedReader, Map.class);
-            return Optional.of(map);
-        } catch (FileNotFoundException e) {
-            ClosedCombat.getInstance().getLogger().error("An error occurs while loading " + mapFile, e);
-            return Optional.empty();
-        }
+    private MapSerializer() {
+        super(Map.class, Storage.mapsDirectory, new ArrayList<>(), Map::getName);
     }
 
-    public static boolean serialize(Map map) {
-        try (Writer writer = new FileWriter(Paths.get(Storage.mapsDirectory.getPath(), map.getName() + ".json").toString())) {
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            gson.toJson(map, writer);
-
-            mapList.add(map);
-
-            return true;
-        } catch (IOException e) {
-            ClosedCombat.getInstance().getLogger().error("An error occurs while saving " + map.getName() + "'s properties file", e);
-            return false;
-        }
+    public static MapSerializer getInstance() {
+        return instance;
     }
 
-    public static void loadMaps() {
-        try {
-            Arrays.stream(Objects.requireNonNull(Storage.mapsDirectory.listFiles()))
-                    .filter(file -> Files.getFileExtension(file.getName()).equals("json"))
-                    .map(MapSerializer::deserialize)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .forEach(mapList::add);
-        } catch (NullPointerException e) {
-            ClosedCombat.getInstance().getLogger().error("An error occurs while loading map properties files", e);
-        }
+    public java.util.Map<String, Map> getHashMap() {
+        return getList().stream().collect(Collectors.toMap(Map::getName, Function.identity()));
     }
 
-    public static List<Map> getMapList() {
-        return mapList;
-    }
-
-    public static java.util.Map<String, Map> getMapMap() {
-        return mapList.stream().collect(Collectors.toMap(Map::getName, Function.identity()));
+    public Optional<Map> get(String mapName) {
+        return getList().stream().filter(map -> StringUtils.equalsIgnoreCase(map.getName(), mapName)).findFirst();
     }
 }

@@ -1,7 +1,7 @@
 package com.gmail.kazz96minecraft.commands.map;
 
 import com.gmail.kazz96minecraft.commands.AbstractCommand;
-import com.gmail.kazz96minecraft.utils.CustomItems;
+import com.gmail.kazz96minecraft.utils.CCItems;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -22,8 +22,8 @@ public class Give extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        Player player = arguments.<Player>getOne("player").orElseThrow(errorBySponge);
-        ItemStack item = arguments.<ItemStack>getOne("item").orElseThrow(errorBySponge);
+        Player player = arguments.<Player>getOne("player").orElseThrow(supplyError("Please insert a valid player name"));
+        ItemStack item = arguments.<ItemStack>getOne("item").orElseThrow(supplyError("Please insert a valid item"));
 
         Inventory hotbarInventory = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(Hotbar.class));
         Inventory mainInventory = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(MainPlayerInventory.class));
@@ -46,7 +46,7 @@ public class Give extends AbstractCommand {
                 .description(Text.of("Give a custom Closed Combat item"))
                 .arguments(
                         GenericArguments.playerOrSource(Text.of("player")),
-                        GenericArguments.choices(Text.of("item"), CustomItems.map())
+                        GenericArguments.choices(Text.of("item"), CCItems.map())
                 )
                 .executor(instance)
                 .build();

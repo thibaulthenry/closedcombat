@@ -13,8 +13,6 @@ import java.util.function.Supplier;
 
 public abstract class AbstractCommand implements CommandExecutor {
 
-    protected final Supplier<CommandException> errorBySponge = () -> new CommandException(Text.of("Error message handled by Sponge"));
-
     protected final AbstractCommand instance;
 
     protected AbstractCommand() {
@@ -25,4 +23,8 @@ public abstract class AbstractCommand implements CommandExecutor {
     public abstract CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException;
 
     public abstract CommandSpec getCommandSpec();
+
+    protected Supplier<CommandException> supplyError(String text) {
+        return () -> new CommandException(Text.of(text));
+    }
 }

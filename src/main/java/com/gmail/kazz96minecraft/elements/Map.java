@@ -2,10 +2,10 @@ package com.gmail.kazz96minecraft.elements;
 
 import com.flowpowered.math.vector.Vector3i;
 import com.gmail.kazz96minecraft.ClosedCombat;
+import com.gmail.kazz96minecraft.elements.serializers.WarpSerializer;
+import com.gmail.kazz96minecraft.utils.CCSigns;
 import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.block.BlockTypes;
-import org.spongepowered.api.data.manipulator.mutable.tileentity.SignData;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -19,75 +19,123 @@ public class Map {
     public static Location<World> leftBlockMarker;
     public static Location<World> rightBlockMarker;
 
-    private String name;
-    private String worldName;
-    private List<Spawn> spawnList;
-
-    public Map() {
+    public enum Options {
+        LOBBY, SPAWN, BREAK, PLACE, MAX, MIN, COUNTDOWN
     }
 
-    public Map(String mapName) {
+    private String name;
+    private String worldName;
+    private Vector3i leftLimitPosition;
+    private Vector3i rightLimitPosition;
 
+    private List<Spawn> spawnList;
+    private Vector3i lobbyPosition;
+
+    private Integer maxPlayers;
+    private Integer minPlayers;
+    private Integer countdown;
+    private List<String> breakableBlocks;
+    private List<String> placeableBlocks;
+
+    public Map(String name) {
         assert leftBlockMarker != null;
         assert rightBlockMarker != null;
 
+        leftLimitPosition = leftBlockMarker.getBlockPosition();
+        rightLimitPosition = rightBlockMarker.getBlockPosition();
 
+        this.name = name;
         worldName = leftBlockMarker.getExtent().getName();
 
-        name = mapName;
+        spawnList = new ArrayList<>();
+        breakableBlocks = new ArrayList<>();
+        placeableBlocks = new ArrayList<>();
 
-        spawnScan();
+        minPlayers = 2;
+
+        mapScan();
     }
 
-    private void spawnScan() {
+    private void mapScan() {
         if (!getLinkedWorld().isPresent()) {
             return;
         }
 
         World world = getLinkedWorld().get();
-        spawnList = new ArrayList<>();
 
-        Vector3i leftPosition = Map.leftBlockMarker.getBlockPosition();
-        Vector3i rightPosition = Map.rightBlockMarker.getBlockPosition();
-
-        int leastX = Math.min(leftPosition.getX(), rightPosition.getX());
-        int leastY = Math.min(leftPosition.getY(), rightPosition.getY());
-        int leastZ = Math.min(leftPosition.getZ(), rightPosition.getZ());
-        int upmostX = Math.max(leftPosition.getX(), rightPosition.getX());
-        int upmostY = Math.max(leftPosition.getY(), rightPosition.getY());
-        int upmostZ = Math.max(leftPosition.getZ(), rightPosition.getZ());
+        int leastX = Math.min(leftLimitPosition.getX(), rightLimitPosition.getX());
+        int leastY = Math.min(leftLimitPosition.getY(), rightLimitPosition.getY());
+        int leastZ = Math.min(leftLimitPosition.getZ(), rightLimitPosition.getZ());
+        int upmostX = Math.max(leftLimitPosition.getX(), rightLimitPosition.getX());
+        int upmostY = Math.max(leftLimitPosition.getY(), rightLimitPosition.getY());
+        int upmostZ = Math.max(leftLimitPosition.getZ(), rightLimitPosition.getZ());
 
         for (int x = leastX; x <= upmostX; x++) {
             for (int y = leastY; y <= upmostY; y++) {
                 for (int z = leastZ; z <= upmostZ; z++) {
-                    if (world.getBlock(x, y, z).getType().equals(BlockTypes.STANDING_SIGN) || world.getBlock(x, y, z).getType().equals(BlockTypes.WALL_SIGN)) {
-                        Location<World> spawnLocation = new Location<>(world, x, y, z);
-
-                        Optional<SignData> optionalSignData = spawnLocation.getOrCreate(SignData.class);
-
-                        if (optionalSignData.isPresent()) {
-                            List<Text> lines = optionalSignData.get().asList();
-                            if (lines.get(0).toPlain().equals("[CCSPAWN]")) {
-                                Spawn spawn = new Spawn(spawnLocation);
-                                if (StringUtils.isNumeric(lines.get(1).toPlain())) {
-                                    spawn.setCapacity(Integer.parseInt(lines.get(1).toPlain()));
-                                }
-
-                                spawnList.add(spawn);
-                            }
-                        }
-                    }
+                    Location<World> location = new Location<>(world, x, y, z);
+                    CCSigns.getLines(location).ifPresent(texts -> affectOptions(location, texts));
                 }
             }
         }
     }
 
+    private void affectOptions(Location<World> signLocation, List<Text> lines) {
+        String option = lines.get(1).toPlain();
+
+        try {
+            switch (Options.valueOf(option)) {
+                case LOBBY:
+                    lobbyPosition = signLocation.getBlockPosition();
+                    break;
+                case SPAWN:
+                    Spawn spawn = new Spawn(signLocation);
+                    if (StringUtils.isNumeric(lines.get(2).toPlain())) {
+                        spawn.setCapacity(Integer.parseInt(lines.get(2).toPlain()));
+                    }
+                    spawnList.add(spawn);
+                    break;
+                case BREAK:
+                    breakableBlocks.add(signLocation.add(0, -1, 0).getBlock().getId());
+                    break;
+                case PLACE:
+                    placeableBlocks.add(signLocation.add(0, -1, 0).getBlock().getId());
+                    break;
+                case MAX:
+                    if (StringUtils.isNumeric(lines.get(2).toPlain())) {
+                        maxPlayers = Integer.parseInt(lines.get(2).toPlain());
+                    }//todo error on else
+                    break;
+                case MIN:
+                    if (StringUtils.isNumeric(lines.get(2).toPlain())) {
+                        minPlayers = Integer.parseInt(lines.get(2).toPlain());
+                    }//todo error on else
+                    break;
+                case COUNTDOWN:
+                    if (StringUtils.isNumeric(lines.get(2).toPlain())) {
+                        countdown = Integer.parseInt(lines.get(2).toPlain());
+                    }//todo error on else
+                    break;
+            }
+        } catch(IllegalArgumentException e) {
+            ClosedCombat.getInstance().getLogger().warn("A CCSign has been detected with a wrong argument : " + option);
+        }
+    }
+
+    public Vector3i getLobbyPosition() {
+        return lobbyPosition;
+    }
+
     public Optional<World> getLinkedWorld() {
         if (!Sponge.getServer().getWorld(worldName).isPresent()) {
-            ClosedCombat.getInstance().getLogger().warn("No existing world found for the linked one of " + name + ". Default world applied");
+            ClosedCombat.getInstance().getLogger().warn("No existing or loaded world found for the linked one of " + name);
         }
 
         return Sponge.getServer().getWorld(worldName);
+    }
+
+    public Integer getWarpSignNumber() {
+        return Math.toIntExact(WarpSerializer.getInstance().getList().stream().filter(sign -> sign.getLinkedMapName().equals(name)).count());
     }
 
     public Integer getTotalSpawnsCapacity() {
@@ -107,4 +155,33 @@ public class Map {
     public List<Spawn> getSpawnList() {
         return spawnList;
     }
+
+    public Integer getMaxPlayers() {
+        return maxPlayers;
+    }
+
+    public Integer getMinPlayers() {
+        return minPlayers;
+    }
+
+    public Integer getCountdown() {
+        return countdown;
+    }
+
+    public List<String> getBreakableBlocks() {
+        return breakableBlocks;
+    }
+
+    public List<String> getPlaceableBlocks() {
+        return placeableBlocks;
+    }
+
+    public Vector3i getLeftLimitPosition() {
+        return leftLimitPosition;
+    }
+
+    public Vector3i getRightLimitPosition() {
+        return rightLimitPosition;
+    }
+
 }

@@ -2,6 +2,7 @@ package com.gmail.kazz96minecraft;
 
 import com.gmail.kazz96minecraft.commands.CommandRegister;
 import com.gmail.kazz96minecraft.elements.serializers.MapSerializer;
+import com.gmail.kazz96minecraft.elements.serializers.WarpSerializer;
 import com.gmail.kazz96minecraft.listeners.ListenerRegister;
 import com.gmail.kazz96minecraft.utils.PluginDetails;
 import com.gmail.kazz96minecraft.utils.Storage;
@@ -13,6 +14,7 @@ import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
 @Plugin(
         id = PluginDetails.ID,
@@ -27,8 +29,6 @@ public class ClosedCombat {
     @Inject
     private Logger logger;
 
-//  private PluginContainer plugin;
-
     public static ClosedCombat getInstance() {
         return instance;
     }
@@ -36,7 +36,6 @@ public class ClosedCombat {
     @Listener
     @SuppressWarnings("unused")
     public void onInitialization(GameInitializationEvent event) {
-//      plugin = Sponge.getPluginManager().getPlugin(PluginDetails.ID).orElseThrow(NoSuchFieldError::new);
         instance = this;
 
         Sponge.getCommandManager().register(this, new CommandRegister().getCommandSpec(), "closedcombat", "cc");
@@ -49,16 +48,21 @@ public class ClosedCombat {
     @Listener
     @SuppressWarnings("unused")
     public void onServerStarting(GameStartingServerEvent event) {
-        Sponge.getServer().getConsole().sendMessage(Text.of("Loading Closed Combat Maps..."));
-        MapSerializer.loadMaps();
+        sendConsole("Loading Closed Combat Maps...");
+        MapSerializer.getInstance().load();
+
+        sendConsole("Loading Closed Combat Signs...");
+        WarpSerializer.getInstance().load();
+
+        sendConsole("Verifying Signs existence...");
+        WarpSerializer.getInstance().verifyRegisteredWarps();
     }
-
-
-//    public PluginContainer getPlugin() {
-//        return plugin;
-//    }
 
     public Logger getLogger() {
         return logger;
+    }
+
+    public void sendConsole(String text) {
+        Sponge.getServer().getConsole().sendMessage(Text.of(TextColors.DARK_GRAY, "[CC]: ", text));
     }
 }

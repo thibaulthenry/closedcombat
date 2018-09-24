@@ -19,7 +19,7 @@ import java.io.IOException;
 public class Unload extends AbstractCommand {
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(errorBySponge);
+        WorldProperties worldProperties = arguments.<WorldProperties>getOne("world").orElseThrow(supplyError("Please insert a valid world name"));
         String worldName = worldProperties.getWorldName();
 
         World world = Sponge.getServer().getWorld(worldProperties.getUniqueId()).orElseThrow(() -> new CommandException(Text.of(worldName, " isn't loaded")));

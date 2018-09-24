@@ -2,6 +2,7 @@ package com.gmail.kazz96minecraft.listeners.shifting;
 
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -10,12 +11,7 @@ import org.spongepowered.api.text.format.TextColors;
 public class ConnectionListener {
 
     @Listener
-    public void onPlayerConnect(ClientConnectionEvent.Join event) {
-        if (!(event.getSource() instanceof Player)) {
-            return;
-        }
-
-        Player player = (Player) event.getSource();
+    public void onPlayerConnect(ClientConnectionEvent.Join event, @First Player player) {
         event.setMessage(
                 Text.builder()
                         .append(Text.of(TextColors.DARK_GRAY, "["))
@@ -27,12 +23,7 @@ public class ConnectionListener {
     }
 
     @Listener
-    public void onPlayerDisconnect(ClientConnectionEvent.Disconnect event) {
-        if (!(event.getSource() instanceof Player)) {
-            return;
-        }
-
-        Player player = (Player) event.getSource();
+    public void onPlayerDisconnect(ClientConnectionEvent.Disconnect event, @First Player player) {
         event.setMessage(
                 Text.builder()
                         .append(Text.of(TextColors.DARK_GRAY, "["))

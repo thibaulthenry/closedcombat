@@ -26,7 +26,7 @@ public class List extends AbstractCommand {
                 .map(worldName -> Text.builder(worldName)
                         .color(TextColors.GREEN)
                         .onHover(TextActions.showText(Text.of("Click to teleport yourself")))
-                        .onClick(TextActions.runCommand("/cc map tp " + worldName))
+                        .onClick(TextActions.runCommand("/cc world tp " + worldName))
                         .build()
                 )
                 .collect(Collectors.toList());

@@ -22,7 +22,7 @@ public class Import extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
-        String worldName = arguments.<String>getOne("world").orElseThrow(errorBySponge);
+        String worldName = arguments.<String>getOne("world").orElseThrow(supplyError("Please insert a valid world name"));
         WorldDatas mapDatas = new WorldDatas(worldName);
 
         if (!mapDatas.levelDatExists()) {

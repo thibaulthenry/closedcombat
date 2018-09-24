@@ -1,7 +1,8 @@
 package com.gmail.kazz96minecraft.listeners;
 
 import com.gmail.kazz96minecraft.ClosedCombat;
-import com.gmail.kazz96minecraft.listeners.block.CCStickListener;
+import com.gmail.kazz96minecraft.listeners.block.CCItemsListener;
+import com.gmail.kazz96minecraft.listeners.block.CCSignListener;
 import com.gmail.kazz96minecraft.listeners.channel.ChatListener;
 import com.gmail.kazz96minecraft.listeners.shifting.ConnectionListener;
 import org.spongepowered.api.Sponge;
@@ -12,7 +13,8 @@ public class ListenerRegister {
 
     public static void registerAll(ClosedCombat plugin) {
         Stream.of(
-                new CCStickListener(),
+                new CCItemsListener(),
+                new CCSignListener(),
                 new ChatListener(),
                 new ConnectionListener()
         ).forEach(listener -> Sponge.getEventManager().registerListeners(plugin, listener));

@@ -6,33 +6,16 @@ import org.spongepowered.api.world.World;
 
 public class Spawn {
 
-    private final Vector3i spawnPosition;
+    private final Vector3i position;
     private Integer capacity;
 
     Spawn(Location<World> spawnLocation) {
-        spawnPosition = spawnLocation.getBlockPosition();
+        position = spawnLocation.getBlockPosition();
         capacity = 1;
     }
 
-    public Spawn(Location<World> spawnLocation, Integer capacity) {
-        this(spawnLocation);
-        this.capacity = capacity;
-    }
-
-    public Vector3i getSpawnPosition() {
-        return spawnPosition;
-    }
-
-    public Integer getX() {
-        return spawnPosition.getX();
-    }
-
-    public Integer getY() {
-        return spawnPosition.getY();
-    }
-
-    public Integer getZ() {
-        return spawnPosition.getZ();
+    public Vector3i getPosition() {
+        return position;
     }
 
     public Integer getCapacity() {

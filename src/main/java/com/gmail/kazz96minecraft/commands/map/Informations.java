@@ -29,7 +29,7 @@ public class Informations extends AbstractCommand {
 
         PaginationList.Builder builder = PaginationList.builder();
 
-        List<Text> registeredMaps = MapSerializer.getMapList().stream()
+        List<Text> registeredMaps = MapSerializer.getInstance().getList().stream()
                 .map(map -> Text.builder(map.getName())
                         .color(TextColors.GREEN)
                         .onHover(TextActions.showText(getMapInformations(map)))
@@ -53,10 +53,22 @@ public class Informations extends AbstractCommand {
         return Text.builder()
                 .append(Text.of("Linked world : "))
                 .append(Text.of(TextColors.GRAY, map.getLinkedWorld().isPresent() ? map.getLinkedWorld().get().getName() : "None (unloaded or non-existent)", "\n"))
+                .append(Text.of("Total warp signs : "))
+                .append(Text.of(TextColors.GRAY, map.getWarpSignNumber(), "\n"))
                 .append(Text.of("Spawn number : "))
                 .append(Text.of(TextColors.GRAY, map.getSpawnList().size(), "\n"))
                 .append(Text.of("Total spawns capacity : "))
                 .append(Text.of(TextColors.GRAY, map.getTotalSpawnsCapacity(), "\n"))
+                .append(Text.of("Minimum players : "))
+                .append(Text.of(TextColors.GRAY, map.getMinPlayers() == null ? 2 : map.getMinPlayers(), "\n"))
+                .append(Text.of("Maximum players : "))
+                .append(Text.of(TextColors.GRAY, map.getMaxPlayers() == null ? "Unlimited" : map.getMaxPlayers(), "\n"))
+                .append(Text.of("Countdown before start : "))
+                .append(Text.of(TextColors.GRAY, map.getCountdown() == null ? 60 : map.getCountdown(), "\n"))
+                .append(Text.of("Breakable blocks : "))
+                .append(Text.of(TextColors.GRAY, map.getBreakableBlocks().size() == 0 ? "None" : map.getBreakableBlocks(), "\n"))
+                .append(Text.of("Placeable blocks : "))
+                .append(Text.of(TextColors.GRAY, map.getPlaceableBlocks().size() == 0 ? "None" : map.getPlaceableBlocks(), "\n"))
                 .build();
     }
 
@@ -67,7 +79,9 @@ public class Informations extends AbstractCommand {
                 .description(Text.of("Show informations about a registered Closed Combat map"))
                 .arguments(
                         GenericArguments.optional(
-                                GenericArguments.choices(Text.of("map"), MapSerializer.getMapMap()) //todo load trop tot
+                                GenericArguments.choices(Text.of("map"),
+                                        () -> MapSerializer.getInstance().getHashMap().keySet(),
+                                        key -> MapSerializer.getInstance().getHashMap().get(key))
                         )
                 )
                 .executor(instance)
