@@ -28,7 +28,7 @@ public class CommandRegister {
                 .permission("closedcombat.map")
                 .child(new Create().getCommandSpec(), "create", "c")
                 .child(new Give().getCommandSpec(), "give")
-                .child(new Informations().getCommandSpec(), "informations", "infos")
+                .child(new Information().getCommandSpec(), "information", "info")
                 .child(new Join().getCommandSpec(), "join")
                 .child(new Leave().getCommandSpec(), "leave")
                 .child(new Stop().getCommandSpec(), "stop")

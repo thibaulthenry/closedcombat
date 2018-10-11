@@ -74,8 +74,9 @@ public class CCItemsListener {
         }
 
         event.setCancelled(true);
-
+        //TODO
         System.out.println("gamelist : " + Game.getGames());
         System.out.println(Sponge.getScheduler().getScheduledTasks().size());
+        Sponge.getScheduler().getScheduledTasks().forEach(task -> System.out.println(task.getName()));
     }
 }

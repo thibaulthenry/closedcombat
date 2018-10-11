@@ -5,12 +5,6 @@ import com.gmail.kazz96minecraft.ClosedCombat;
 import com.gmail.kazz96minecraft.elements.Map;
 import com.gmail.kazz96minecraft.elements.Warp;
 import com.gmail.kazz96minecraft.utils.Storage;
-import org.apache.commons.lang3.StringUtils;
-import org.spongepowered.api.block.tileentity.TileEntity;
-import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.text.format.TextStyles;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -54,48 +48,17 @@ public class WarpSerializer extends AbstractSerializer<Warp> {
         };
 
         getList().forEach(warp -> {
-            if (!warp.getWorld().isPresent()) {
-                ClosedCombat.getInstance().sendConsole("Unreachable world for warp : " + WarpSerializer.getJsonFileName(warp));
-                return;
-            }
-
-            Location<World> warpLocation = warp.getWorld().get().getLocation(warp.getPosition());
-
-            Optional<TileEntity> optionalTileEntity = warpLocation.getTileEntity();
-            if (!optionalTileEntity.isPresent()) {
+            if (!warp.getTileEntity().isPresent()) {
                 deleteWarp.accept(warp);
                 return;
             }
 
-            TileEntity tileEntity = optionalTileEntity.get();
-            if (!(tileEntity instanceof org.spongepowered.api.block.tileentity.Sign)) {
+            if (!warp.getLinkedMap().isPresent()) {
                 deleteWarp.accept(warp);
                 return;
             }
 
-            if (!tileEntity.get(Keys.SIGN_LINES).isPresent()) {
-                deleteWarp.accept(warp);
-                return;
-            }
-
-            List<Text> lines = tileEntity.get(Keys.SIGN_LINES).get();
-
-            if (!(lines.get(0).toPlain().equals("[CC]") && StringUtils.isNotBlank(lines.get(1).toPlain()))) {
-                deleteWarp.accept(warp);
-                return;
-            }
-
-            Optional<Map> optionalMap = MapSerializer.getInstance().get(lines.get(1).toPlain());
-
-            if (!optionalMap.isPresent()) {
-                deleteWarp.accept(warp);
-                return;
-            }
-
-            lines.set(2, Text.of(TextColors.GREEN, "AVAILABLE"));
-            lines.set(3, Text.of(TextStyles.ITALIC, "0/", optionalMap.get().getMaxPlayers()));
-
-            tileEntity.offer(Keys.SIGN_LINES, lines);
+            warp.reset();
         });
 
         if (unreachableWarp.get() > 0) {

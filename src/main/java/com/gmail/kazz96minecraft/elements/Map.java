@@ -6,6 +6,7 @@ import com.gmail.kazz96minecraft.elements.serializers.WarpSerializer;
 import com.gmail.kazz96minecraft.utils.CCSigns;
 import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -51,7 +52,7 @@ public class Map {
         breakableBlocks = new ArrayList<>();
         placeableBlocks = new ArrayList<>();
 
-        minPlayers = 2;
+        minPlayers = 1;
 
         mapScan();
     }
@@ -77,6 +78,10 @@ public class Map {
                     CCSigns.getLines(location).ifPresent(texts -> affectOptions(location, texts));
                 }
             }
+        }
+
+        if (maxPlayers < minPlayers || maxPlayers > getTotalSpawnsCapacity()) {
+            maxPlayers = getTotalSpawnsCapacity();
         }
     }
 
@@ -104,17 +109,29 @@ public class Map {
                 case MAX:
                     if (StringUtils.isNumeric(lines.get(2).toPlain())) {
                         maxPlayers = Integer.parseInt(lines.get(2).toPlain());
-                    }//todo error on else
+                    } else {
+                        ClosedCombat.getInstance().sendConsole("A corrupted MAX CCSign has been detected. Avoided..");
+                    }
                     break;
                 case MIN:
                     if (StringUtils.isNumeric(lines.get(2).toPlain())) {
                         minPlayers = Integer.parseInt(lines.get(2).toPlain());
-                    }//todo error on else
+                        if (Integer.parseInt(lines.get(2).toPlain()) < 1) {
+                            minPlayers = 1;//TODO WARNING MESSAGE
+                        }
+                    } else {
+                        ClosedCombat.getInstance().sendConsole("A corrupted MIN CCSign has been detected. Avoided..");
+                    }
                     break;
                 case COUNTDOWN:
                     if (StringUtils.isNumeric(lines.get(2).toPlain())) {
                         countdown = Integer.parseInt(lines.get(2).toPlain());
-                    }//todo error on else
+                        if (Integer.parseInt(lines.get(2).toPlain()) < 3) {
+                            countdown = 3;
+                        }
+                    } else {
+                        ClosedCombat.getInstance().sendConsole("A corrupted COUNTDOWN CCSign has been detected. Avoided..");
+                    }
                     break;
             }
         } catch(IllegalArgumentException e) {
@@ -122,7 +139,27 @@ public class Map {
         }
     }
 
-    public Vector3i getLobbyPosition() {
+    boolean isOutside(Player targetPlayer) {
+        return isOutside(targetPlayer.getLocation());
+    }
+
+    private boolean isOutside(Location<World> location) {
+        int x = location.getBlockX();
+        int z = location.getBlockZ();
+
+        if (!location.getExtent().getName().equals(worldName)) {
+            return true;
+        }
+
+        int leastX = Math.min(leftLimitPosition.getX(), rightLimitPosition.getX());
+        int leastZ = Math.min(leftLimitPosition.getZ(), rightLimitPosition.getZ());
+        int upmostX = Math.max(leftLimitPosition.getX(), rightLimitPosition.getX());
+        int upmostZ = Math.max(leftLimitPosition.getZ(), rightLimitPosition.getZ());
+
+        return x < leastX || upmostX < x || z < leastZ || upmostZ < z;
+    }
+
+    Vector3i getLobbyPosition() {
         return lobbyPosition;
     }
 

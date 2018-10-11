@@ -1,13 +1,11 @@
 package com.gmail.kazz96minecraft.elements;
 
 import com.gmail.kazz96minecraft.ClosedCombat;
-import com.gmail.kazz96minecraft.events.game.GameJoinEvent;
-import com.gmail.kazz96minecraft.events.game.GameLeaveEvent;
-import com.gmail.kazz96minecraft.events.game.GameStartEvent;
-import com.gmail.kazz96minecraft.events.game.GameStopEvent;
+import com.gmail.kazz96minecraft.events.game.*;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.cause.entity.damage.source.DamageSources;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.chat.ChatTypes;
@@ -25,6 +23,7 @@ public class Game {
 
     private final Map map;
     private final List<Player> players;
+    private final List<Player> taskPlayers;
 
     private long firstEnterTime;
     private long gameStartTime;
@@ -32,11 +31,12 @@ public class Game {
     private int currentCountdown;
     private Task missingPlayersTask;
     private Task countdownTask;
+    private Task runningGameTask;
 
     private Game(Map map) {
         this.map = map;
         players = new ArrayList<>();
-        firstEnterTime = System.currentTimeMillis();
+        taskPlayers = new ArrayList<>();
     }
 
     public static List<Game> getGames() {
@@ -79,43 +79,43 @@ public class Game {
     }
 
     private void updateTasks() {
-        updateMissingPlayersTask();
-        updateCountdownTask();
-    }
-
-    private void updateMissingPlayersTask() {
-        cancelMissingPlayersTask();
-
         if (players.size() == 0) {
+            firstEnterTime = 0;
+            cancelTasks();
             return;
         }
 
         int playersRequired = map.getMinPlayers() - players.size();
 
-        if (playersRequired == 0) {
-            if (map.getMinPlayers() > 1) {
-                updateCountdownTask();
-            }
-            return;
+        if (!isRunning() && playersRequired > 0) {
+            cancelCountdownTask();
+            startMissingPlayersTask();
         }
 
-        missingPlayersTask = Task.builder().interval(10, TimeUnit.SECONDS).async().execute(() ->
-                players.forEach(player ->
-                        player.sendMessage(ChatTypes.ACTION_BAR, Text.of(TextColors.YELLOW, "Missing ", playersRequired, " players before starting countdown.."))
-                )
-        ).submit(ClosedCombat.getInstance());
+        if (!isRunning() && playersRequired <= 0) {
+            cancelMissingPlayerTask();
+            startCountdownTask();
+        }
+
+        if (isRunning() && playersRequired <= 0) {
+            cancelMissingPlayerTask();
+            cancelCountdownTask();
+            startGameRunningTask();
+        }
     }
 
-    private void updateCountdownTask() {
-        cancelCountdownTask();
+    private void startMissingPlayersTask() {
+        missingPlayersTask = Task.builder().name("Missing Players - " + map.getName()).interval(5, TimeUnit.SECONDS).async().execute(() -> {
+            players.forEach(player ->
+                    player.sendMessage(ChatTypes.ACTION_BAR, Text.of(TextColors.YELLOW, "Missing ", map.getMinPlayers() - players.size(), " players before starting countdown.."))
+            );
+        }).submit(ClosedCombat.getInstance());
+    }
 
-        if (missingPlayersTask != null) {
-            return;
-        }
-
+    private void startCountdownTask() {
         currentCountdown = map.getCountdown() == null ? 60 : map.getCountdown();
 
-        countdownTask = Task.builder().interval(1, TimeUnit.SECONDS).async().execute(() -> {
+        countdownTask = Task.builder().name("Countdown - " + map.getName()).interval(1, TimeUnit.SECONDS).async().execute(() -> {
             players.forEach(player -> player.sendMessages(ChatTypes.ACTION_BAR,
                     Text.builder()
                             .append(Text.of(TextColors.BLACK, "Game on ", map.getName(), " is starting in "))
@@ -123,8 +123,9 @@ public class Game {
                             .build()
             ));
 
+            GameCountdownEvent.fire(this, currentCountdown);
+
             if (currentCountdown == 0) {
-                cancelCountdownTask();
                 start();
                 return;
             }
@@ -133,12 +134,24 @@ public class Game {
         }).submit(ClosedCombat.getInstance());
     }
 
-    private void cancelTasks() {
-        cancelMissingPlayersTask();
-        cancelCountdownTask();
+    private void startGameRunningTask() {
+        runningGameTask = Task.builder().name("Game Running - " + map.getName()).interval(1, TimeUnit.SECONDS).execute(() -> {
+            taskPlayers.clear();
+            taskPlayers.addAll(players);
+            taskPlayers.stream().filter(map::isOutside).forEach(player -> {
+                player.sendMessage(ChatTypes.ACTION_BAR, Text.of(TextStyles.BOLD, TextColors.RED, "You're outside the map limits"));
+                player.damage(5, DamageSources.VOID);
+            });
+        }).submit(ClosedCombat.getInstance());
     }
 
-    private void cancelMissingPlayersTask() {
+    private void cancelTasks() {
+        cancelMissingPlayerTask();
+        cancelCountdownTask();
+        cancelGameRunningTask();
+    }
+
+    private void cancelMissingPlayerTask() {
         if (missingPlayersTask != null) {
             missingPlayersTask.cancel();
             missingPlayersTask = null;
@@ -146,31 +159,38 @@ public class Game {
     }
 
     private void cancelCountdownTask() {
+        GameCountdownEvent.fire(this, 0);
         if (countdownTask != null) {
             countdownTask.cancel();
             countdownTask = null;
         }
     }
 
+    private void cancelGameRunningTask() {
+        if (runningGameTask != null) {
+            runningGameTask.cancel();
+            runningGameTask = null;
+        }
+    }
+
     private void start() {
-        GameStartEvent.fire(this);
         gameStartTime = System.currentTimeMillis();
-        System.out.println("start");
+        GameStartEvent.fire(this);
+        updateTasks();
     }
 
     private void stop() {
-        GameStopEvent.fire(this);
         gameStartTime = 0;
+        GameStopEvent.fire(this);
+        cancelTasks();
         games.remove(this);
     }
 
     public void destroy() {
         players.forEach(player -> {
-            player.sendMessage(Text.of(TextColors.RED, "The map ", map.getName(), " has been modified. You have been transfered to the default world"));
+            player.sendMessage(Text.of(TextColors.RED, "The game on ", map.getName(), " has been stopped. You have been transfered to the default world"));
             Sponge.getCommandManager().process(player, "cc world tp " + Sponge.getServer().getDefaultWorldName());
         });
-
-        cancelTasks();
 
         stop();
     }
@@ -193,13 +213,7 @@ public class Game {
         int yLobby = map.getLobbyPosition().getY();
         int zLobby = map.getLobbyPosition().getZ();
 
-        Sponge.getCommandManager().process(player,
-                "cc world tp " +
-                        map.getLinkedWorld().get().getName() + " " +
-                        xLobby + " " +
-                        yLobby + " " +
-                        zLobby
-        );
+        Sponge.getCommandManager().process(player, "cc world tp " + map.getLinkedWorld().get().getName() + " " + xLobby + " " + yLobby + " " + zLobby);
     }
 
     public void leave(Player player) {
@@ -207,8 +221,8 @@ public class Game {
         GameLeaveEvent.fire(this, player);
         updateTasks();
 
-        if (players.size() == 0) {
-            firstEnterTime = 0;
+        if (players.size() == 0 && isRunning()) {
+            stop();
         }
     }
 

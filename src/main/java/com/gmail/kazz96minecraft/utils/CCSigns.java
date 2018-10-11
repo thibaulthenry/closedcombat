@@ -25,7 +25,7 @@ public class CCSigns {
         return Optional.of(lines);
     }
 
-    public static Optional<SignData> getSignData(Location<World> location) {
+    private static Optional<SignData> getSignData(Location<World> location) {
         if (!(location.getBlock().getType().equals(BlockTypes.STANDING_SIGN) || location.getBlock().getType().equals(BlockTypes.WALL_SIGN))) {
             return Optional.empty();
         }

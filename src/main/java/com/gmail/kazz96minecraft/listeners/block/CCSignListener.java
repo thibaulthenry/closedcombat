@@ -1,18 +1,13 @@
 package com.gmail.kazz96minecraft.listeners.block;
 
-import com.gmail.kazz96minecraft.elements.Game;
 import com.gmail.kazz96minecraft.elements.Map;
 import com.gmail.kazz96minecraft.elements.Warp;
 import com.gmail.kazz96minecraft.elements.serializers.MapSerializer;
 import com.gmail.kazz96minecraft.elements.serializers.WarpSerializer;
-import com.gmail.kazz96minecraft.events.game.GameJoinEvent;
-import com.gmail.kazz96minecraft.events.game.GameLeaveEvent;
+import com.gmail.kazz96minecraft.events.game.*;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
-import org.spongepowered.api.block.tileentity.Sign;
-import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.data.Transaction;
-import org.spongepowered.api.data.manipulator.mutable.tileentity.SignData;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
@@ -151,77 +146,28 @@ public class CCSignListener {
     }
 
     @Listener
-    public void onGamePlayerJoin(GameJoinEvent event, @First Player player) {
-        Game game = event.getGame();
-        List<Warp> warps = WarpSerializer.getInstance().getWarps(game.getLinkedMap());
-
-        warps.forEach(warp -> {
-            if (!warp.getWorld().isPresent()) {
-                return;
-            }
-
-            Optional<TileEntity> optionalTileEntity = new Location<>(warp.getWorld().get(), warp.getPosition()).getTileEntity();
-
-            if (!optionalTileEntity.isPresent()) {
-                return;
-            }
-
-            TileEntity tileEntity = optionalTileEntity.get();
-
-            if (!(tileEntity instanceof org.spongepowered.api.block.tileentity.Sign)) {
-                return;
-            }
-
-            int missingPlayers = game.getLinkedMap().getMaxPlayers() - game.getPlayers().size();
-
-            SignData signData = ((Sign) tileEntity).getSignData();
-
-            if (missingPlayers == 0) {
-                signData.setElement(2, Text.of(TextColors.DARK_RED, "FULL"));
-            } else if (missingPlayers > 0) {
-                signData.setElement(2, Text.of(TextColors.GREEN, "AVAILABLE"));
-            }
-            signData.setElement(3, Text.of(TextColors.WHITE, game.getPlayers().size(), "/", game.getLinkedMap().getMaxPlayers()));
-
-            tileEntity.offer(signData);
-        });
+    public void onGamePlayerJoin(GameJoinEvent event) {
+        WarpSerializer.getInstance().getWarps(event.getGame().getLinkedMap()).forEach(Warp::update);
     }
 
     @Listener
-    public void onGamePlayerLeave(GameLeaveEvent event, @First Player player) {
-        Game game = event.getGame();
-        List<Warp> warps = WarpSerializer.getInstance().getWarps(game.getLinkedMap());
+    public void onGamePlayerLeave(GameLeaveEvent event) {
+        WarpSerializer.getInstance().getWarps(event.getGame().getLinkedMap()).forEach(Warp::update);
+    }
 
-        warps.forEach(warp -> {
-            if (!warp.getWorld().isPresent()) {
-                return;
-            }
+    @Listener
+    public void onGameStart(GameStartEvent event) {
+        WarpSerializer.getInstance().getWarps(event.getGame().getLinkedMap()).forEach(Warp::update);
+    }
 
-            Optional<TileEntity> optionalTileEntity = new Location<>(warp.getWorld().get(), warp.getPosition()).getTileEntity();
+    @Listener
+    public void onGameStop(GameStopEvent event) {
+        WarpSerializer.getInstance().getWarps(event.getGame().getLinkedMap()).forEach(Warp::reset);
+    }
 
-            if (!optionalTileEntity.isPresent()) {
-                return;
-            }
-
-            TileEntity tileEntity = optionalTileEntity.get();
-
-            if (!(tileEntity instanceof org.spongepowered.api.block.tileentity.Sign)) {
-                return;
-            }
-
-            int missingPlayers = game.getLinkedMap().getMaxPlayers() - game.getPlayers().size();
-
-            SignData signData = ((Sign) tileEntity).getSignData();
-
-            if (missingPlayers == 0) {
-                signData.setElement(2, Text.of(TextStyles.BOLD, TextColors.DARK_RED, "FULL"));
-            } else if (missingPlayers > 0) {
-                signData.setElement(2, Text.of(TextStyles.BOLD, TextColors.GREEN, "AVAILABLE"));
-            }
-            signData.setElement(3, Text.of(TextColors.WHITE, game.getPlayers().size(), "/", game.getLinkedMap().getMaxPlayers()));
-
-            tileEntity.offer(signData);
-        });
+    @Listener
+    public void onCountDown(GameCountdownEvent event) {
+        WarpSerializer.getInstance().getWarps(event.getGame().getLinkedMap()).forEach(warp -> warp.update(event.getCountdown()));
     }
 
 }

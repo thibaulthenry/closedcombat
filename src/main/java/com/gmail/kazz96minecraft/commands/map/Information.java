@@ -17,12 +17,12 @@ import org.spongepowered.api.text.format.TextColors;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Informations extends AbstractCommand {
+public class Information extends AbstractCommand {
 
     @Override
     public CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException {
         if (arguments.<Map>getOne("map").isPresent()) {
-            source.sendMessage(getMapInformations(arguments.<Map>getOne("map").get()));
+            source.sendMessage(getMapInformation(arguments.<Map>getOne("map").get()));
 
             return CommandResult.success();
         }
@@ -32,7 +32,7 @@ public class Informations extends AbstractCommand {
         List<Text> registeredMaps = MapSerializer.getInstance().getList().stream()
                 .map(map -> Text.builder(map.getName())
                         .color(TextColors.GREEN)
-                        .onHover(TextActions.showText(getMapInformations(map)))
+                        .onHover(TextActions.showText(getMapInformation(map)))
                         .build()
                 )
                 .collect(Collectors.toList());
@@ -49,7 +49,7 @@ public class Informations extends AbstractCommand {
         return CommandResult.success();
     }
 
-    private Text getMapInformations(Map map) {
+    private Text getMapInformation(Map map) {
         return Text.builder()
                 .append(Text.of("Linked world : "))
                 .append(Text.of(TextColors.GRAY, map.getLinkedWorld().isPresent() ? map.getLinkedWorld().get().getName() : "None (unloaded or non-existent)", "\n"))
@@ -75,8 +75,8 @@ public class Informations extends AbstractCommand {
     @Override
     public CommandSpec getCommandSpec() {
         return CommandSpec.builder()
-                .permission("closedcombat.map.informations")
-                .description(Text.of("Show informations about a registered Closed Combat map"))
+                .permission("closedcombat.map.information")
+                .description(Text.of("Show information about a registered Closed Combat map"))
                 .arguments(
                         GenericArguments.optional(
                                 GenericArguments.choices(Text.of("map"),
