@@ -2,6 +2,7 @@ package com.gmail.kazz96minecraft;
 
 import com.gmail.kazz96minecraft.commands.CommandRegister;
 import com.gmail.kazz96minecraft.elements.serializers.MapSerializer;
+import com.gmail.kazz96minecraft.elements.serializers.StatisticsSerializer;
 import com.gmail.kazz96minecraft.elements.serializers.WarpSerializer;
 import com.gmail.kazz96minecraft.listeners.ListenerRegister;
 import com.gmail.kazz96minecraft.utils.PluginDetails;
@@ -40,7 +41,7 @@ public class ClosedCombat {
 
         Sponge.getCommandManager().register(this, new CommandRegister().getCommandSpec(), "closedcombat", "cc");
 
-        ListenerRegister.registerAll(this);
+        ListenerRegister.registerAll();
 
         Storage.init();
     }
@@ -51,11 +52,14 @@ public class ClosedCombat {
         sendConsole("Loading Closed Combat Maps...");
         MapSerializer.getInstance().load();
 
-        sendConsole("Loading Closed Combat Signs...");
+        sendConsole("Loading Closed Combat Warps...");
         WarpSerializer.getInstance().load();
 
-        sendConsole("Verifying Signs existence...");
+        sendConsole("Verifying Warps existence...");
         WarpSerializer.getInstance().verifyRegisteredWarps();
+
+        sendConsole("Loading Closed Combat Statistics...");
+        StatisticsSerializer.getInstance().load();
     }
 
     public Logger getLogger() {

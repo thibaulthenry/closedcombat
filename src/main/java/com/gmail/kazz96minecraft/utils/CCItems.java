@@ -11,8 +11,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public enum CCItems {
+    ALL(ItemStack.builder().itemType(ItemTypes.BARRIER).build()),
     CCSTICK(ItemStack.builder().itemType(ItemTypes.STICK).add(Keys.DISPLAY_NAME, Text.of("CCStick")).build()),
-    CCHATCHET(ItemStack.builder().itemType(ItemTypes.WOODEN_AXE).add(Keys.DISPLAY_NAME, Text.of("CCHatchet")).build());
+    CCHATCHET(ItemStack.builder().itemType(ItemTypes.WOODEN_AXE).add(Keys.DISPLAY_NAME, Text.of("CCHatchet")).build()),
+    CCCOOKIE(ItemStack.builder().itemType(ItemTypes.COOKIE).add(Keys.DISPLAY_NAME, Text.of("CCCookie")).build()),
+    CCCOMPASS(ItemStack.builder().itemType(ItemTypes.COMPASS).add(Keys.DISPLAY_NAME, Text.of("CCCompass")).build());
 
     private final ItemStack item;
 
@@ -25,7 +28,7 @@ public enum CCItems {
                 .collect(Collectors.toMap(customItem -> StringUtils.capitalize(customItem.name()), CCItems::get));
     }
 
-    private ItemStack get() {
+    public ItemStack get() {
         return item;
     }
 

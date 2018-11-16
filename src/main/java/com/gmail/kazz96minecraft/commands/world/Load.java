@@ -35,12 +35,13 @@ public class Load extends AbstractCommand {
         }
 
         source.sendMessage(Text.of(TextColors.DARK_GRAY, worldName, " about to be loaded.."));
+        worldProperties.setEnabled(true);
 
         Task.builder().delayTicks(20).execute(() -> {
             Optional<World> loadingWorld = Sponge.getServer().loadWorld(worldProperties);
 
             if (!loadingWorld.isPresent()) {
-                source.sendMessage(Text.of(TextColors.RED, "An error occurs while loading", worldName));
+                source.sendMessage(Text.of(TextColors.RED, "An error occurred while loading ", worldName));
                 return;
             }
 

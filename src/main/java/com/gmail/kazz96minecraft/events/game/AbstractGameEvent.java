@@ -1,7 +1,6 @@
 package com.gmail.kazz96minecraft.events.game;
 
 import com.gmail.kazz96minecraft.elements.Game;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.EventContext;
 import org.spongepowered.api.event.impl.AbstractEvent;

@@ -1,13 +1,17 @@
 package com.gmail.kazz96minecraft.elements;
 
+import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
 import com.gmail.kazz96minecraft.ClosedCombat;
 import com.gmail.kazz96minecraft.elements.serializers.WarpSerializer;
 import com.gmail.kazz96minecraft.utils.CCSigns;
+import com.gmail.kazz96minecraft.utils.Shortcuts;
 import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.util.Direction;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -20,23 +24,23 @@ public class Map {
     public static Location<World> leftBlockMarker;
     public static Location<World> rightBlockMarker;
 
-    public enum Options {
-        LOBBY, SPAWN, BREAK, PLACE, MAX, MIN, COUNTDOWN
-    }
+    private List<Spawn> spawns;
+    private List<String> breakableBlocks;
+    private List<String> placeableBlocks;
 
     private String name;
     private String worldName;
+
     private Vector3i leftLimitPosition;
     private Vector3i rightLimitPosition;
-
-    private List<Spawn> spawnList;
     private Vector3i lobbyPosition;
+    private Vector3d lobbyRotation;
 
-    private Integer maxPlayers;
-    private Integer minPlayers;
-    private Integer countdown;
-    private List<String> breakableBlocks;
-    private List<String> placeableBlocks;
+    private int minPlayers;
+    private int maxPlayers;
+    private int winPlayers;
+    private int limit;
+    private int countdown;
 
     public Map(String name) {
         assert leftBlockMarker != null;
@@ -48,7 +52,7 @@ public class Map {
         this.name = name;
         worldName = leftBlockMarker.getExtent().getName();
 
-        spawnList = new ArrayList<>();
+        spawns = new ArrayList<>();
         breakableBlocks = new ArrayList<>();
         placeableBlocks = new ArrayList<>();
 
@@ -80,25 +84,39 @@ public class Map {
             }
         }
 
+        if (countdown < 3) {
+            countdown = 60;
+        }
+
+        if (minPlayers < 2) {
+            minPlayers = 2;
+        }
+
         if (maxPlayers < minPlayers || maxPlayers > getTotalSpawnsCapacity()) {
             maxPlayers = getTotalSpawnsCapacity();
         }
+
+        if (winPlayers < 1 || winPlayers > minPlayers || winPlayers > maxPlayers) {
+            winPlayers = 1;
+        }
     }
 
-    private void affectOptions(Location<World> signLocation, List<Text> lines) {
-        String option = lines.get(1).toPlain();
+    public Map.Options affectOptions(Location<World> signLocation, List<Text> lines) {
+        String option = StringUtils.upperCase(lines.get(1).toPlain());
+        String argument = lines.get(2).toPlain();
 
         try {
             switch (Options.valueOf(option)) {
                 case LOBBY:
                     lobbyPosition = signLocation.getBlockPosition();
+                    lobbyRotation = CCSigns.getSignDirection(signLocation).orElse(Direction.NORTH).asOffset();
                     break;
                 case SPAWN:
                     Spawn spawn = new Spawn(signLocation);
-                    if (StringUtils.isNumeric(lines.get(2).toPlain())) {
-                        spawn.setCapacity(Integer.parseInt(lines.get(2).toPlain()));
+                    if (StringUtils.isNumeric(argument)) {
+                        spawn.setCapacity(Integer.parseInt(argument));
                     }
-                    spawnList.add(spawn);
+                    spawns.add(spawn);
                     break;
                 case BREAK:
                     breakableBlocks.add(signLocation.add(0, -1, 0).getBlock().getId());
@@ -106,37 +124,70 @@ public class Map {
                 case PLACE:
                     placeableBlocks.add(signLocation.add(0, -1, 0).getBlock().getId());
                     break;
+                case WIN:
+                    if (StringUtils.isNumeric(argument)) {
+                        winPlayers = Integer.parseInt(argument);
+                    } else {
+                        ClosedCombat.getInstance().sendConsole("A corrupted WIN CCSign has been detected. Avoided..");
+                    }
+                    break;
                 case MAX:
-                    if (StringUtils.isNumeric(lines.get(2).toPlain())) {
-                        maxPlayers = Integer.parseInt(lines.get(2).toPlain());
+                    if (StringUtils.isNumeric(argument)) {
+                        maxPlayers = Integer.parseInt(argument);
                     } else {
                         ClosedCombat.getInstance().sendConsole("A corrupted MAX CCSign has been detected. Avoided..");
                     }
                     break;
                 case MIN:
-                    if (StringUtils.isNumeric(lines.get(2).toPlain())) {
-                        minPlayers = Integer.parseInt(lines.get(2).toPlain());
-                        if (Integer.parseInt(lines.get(2).toPlain()) < 1) {
-                            minPlayers = 1;//TODO WARNING MESSAGE
-                        }
+                    if (StringUtils.isNumeric(argument)) {
+                        minPlayers = Integer.parseInt(argument);
                     } else {
                         ClosedCombat.getInstance().sendConsole("A corrupted MIN CCSign has been detected. Avoided..");
                     }
                     break;
                 case COUNTDOWN:
-                    if (StringUtils.isNumeric(lines.get(2).toPlain())) {
-                        countdown = Integer.parseInt(lines.get(2).toPlain());
-                        if (Integer.parseInt(lines.get(2).toPlain()) < 3) {
-                            countdown = 3;
-                        }
+                    if (StringUtils.isNumeric(argument)) {
+                        countdown = Integer.parseInt(argument);
                     } else {
                         ClosedCombat.getInstance().sendConsole("A corrupted COUNTDOWN CCSign has been detected. Avoided..");
+                    }
+                    break;
+                case LIMIT:
+                    if (StringUtils.isNumeric(argument)) {
+                        limit = Integer.parseInt(argument);
+                    } else {
+                        ClosedCombat.getInstance().sendConsole("A corrupted LIMIT CCSign has been detected. Avoided..");
                     }
                     break;
             }
         } catch(IllegalArgumentException e) {
             ClosedCombat.getInstance().getLogger().warn("A CCSign has been detected with a wrong argument : " + option);
         }
+
+        return Options.valueOf(option);
+    }
+
+    void restoreWorld() {
+        Task.builder().name("Restauring " + worldName + " from " + name).execute(() -> {
+            Shortcuts.runCommand("cc", "world", "unload", worldName);
+            Shortcuts.runCommand("cc", "world", "extract", worldName);
+            Shortcuts.runCommand("cc", "world", "load", worldName);
+        }).submit(ClosedCombat.getInstance());
+    }
+
+    void deleteVisibleSigns() {
+        if (!getLinkedWorld().isPresent()) {
+            return;
+        }
+
+        new Location<>(getLinkedWorld().get(), lobbyPosition).removeBlock();
+        spawns.forEach(spawn -> new Location<>(getLinkedWorld().get(), spawn.getPosition()).removeBlock());
+    }
+
+    public Integer getTotalSpawnsCapacity() {
+        return spawns.stream()
+                .mapToInt(Spawn::getCapacity)
+                .sum();
     }
 
     boolean isOutside(Player targetPlayer) {
@@ -159,8 +210,16 @@ public class Map {
         return x < leastX || upmostX < x || z < leastZ || upmostZ < z;
     }
 
+    public Vector3i getLeftLimitPosition() {
+        return leftLimitPosition;
+    }
+
     Vector3i getLobbyPosition() {
         return lobbyPosition;
+    }
+
+    Vector3d getLobbyRotation() {
+        return lobbyRotation;
     }
 
     public Optional<World> getLinkedWorld() {
@@ -175,10 +234,8 @@ public class Map {
         return Math.toIntExact(WarpSerializer.getInstance().getList().stream().filter(sign -> sign.getLinkedMapName().equals(name)).count());
     }
 
-    public Integer getTotalSpawnsCapacity() {
-        return spawnList.stream()
-                .mapToInt(Spawn::getCapacity)
-                .sum();
+    public Vector3i getRightLimitPosition() {
+        return rightLimitPosition;
     }
 
     public String getName() {
@@ -189,20 +246,28 @@ public class Map {
         return worldName;
     }
 
-    public List<Spawn> getSpawnList() {
-        return spawnList;
+    public List<Spawn> getSpawns() {
+        return spawns;
     }
 
-    public Integer getMaxPlayers() {
+    public int getMaxPlayers() {
         return maxPlayers;
     }
 
-    public Integer getMinPlayers() {
+    public int getMinPlayers() {
         return minPlayers;
     }
 
-    public Integer getCountdown() {
+    public int getWinPlayers() {
+        return winPlayers;
+    }
+
+    public int getCountdown() {
         return countdown;
+    }
+
+    public enum Options {
+        LOBBY, SPAWN, BREAK, PLACE, MAX, MIN, WIN, COUNTDOWN, LIMIT
     }
 
     public List<String> getBreakableBlocks() {
@@ -212,13 +277,4 @@ public class Map {
     public List<String> getPlaceableBlocks() {
         return placeableBlocks;
     }
-
-    public Vector3i getLeftLimitPosition() {
-        return leftLimitPosition;
-    }
-
-    public Vector3i getRightLimitPosition() {
-        return rightLimitPosition;
-    }
-
 }

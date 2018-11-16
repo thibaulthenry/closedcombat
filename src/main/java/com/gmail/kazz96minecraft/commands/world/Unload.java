@@ -28,7 +28,7 @@ public class Unload extends AbstractCommand {
             throw new CommandException(Text.of("Default world cannot be unloaded"));
         }
 
-        World defaultWorld = Sponge.getServer().getWorld(Sponge.getServer().getDefaultWorldName()).orElseThrow(() -> new CommandException(Text.of("An error occurs while catching the default world")));
+        World defaultWorld = Sponge.getServer().getWorld(Sponge.getServer().getDefaultWorldName()).orElseThrow(() -> new CommandException(Text.of("An error occurred while catching the default world")));
 
         world.getEntities().stream()
                 .filter(entity -> entity instanceof Player)
@@ -40,13 +40,13 @@ public class Unload extends AbstractCommand {
         Sponge.getServer().saveWorldProperties(worldProperties);
 
         if (!Sponge.getServer().unloadWorld(world)) {
-            throw new CommandException(Text.of("An error occurs while unloading ", worldName));
+            throw new CommandException(Text.of("An error occurred while unloading ", worldName));
         }
 
         try {
             world.save();
         } catch (IOException e) {
-            throw new CommandException(Text.of("An error occurs while saving ", worldName, " after unloading"), e);
+            throw new CommandException(Text.of("An error occurred while saving ", worldName, " after unloading"), e);
         }
 
         source.sendMessage(Text.of(TextColors.GREEN, worldName, " has been unloaded successfully"));

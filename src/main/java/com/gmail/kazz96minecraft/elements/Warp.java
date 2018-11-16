@@ -21,9 +21,9 @@ public class Warp {
     private final String linkedMapName;
     private Integer countdown;
 
-    public Warp(Location<World> signLocation, String linkedMapName) {
-        this.worldName = signLocation.getExtent().getName();
-        this.position = signLocation.getBlockPosition();
+    public Warp(Location<World> location, String linkedMapName) {
+        this.worldName = location.getExtent().getName();
+        this.position = location.getBlockPosition();
         this.linkedMapName = linkedMapName;
     }
 
@@ -35,7 +35,7 @@ public class Warp {
         return position;
     }
 
-    private Optional<Location<World>> getLocation() {
+    public Optional<Location<World>> getLocation() {
         if (!getWorld().isPresent()) {
             return Optional.empty();
         }

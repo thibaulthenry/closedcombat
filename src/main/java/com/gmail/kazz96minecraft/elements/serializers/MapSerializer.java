@@ -28,4 +28,13 @@ public class MapSerializer extends AbstractSerializer<Map> {
     public Optional<Map> get(String mapName) {
         return getList().stream().filter(map -> StringUtils.equalsIgnoreCase(map.getName(), mapName)).findFirst();
     }
+
+    public boolean removeRegisteredMap(Map map) {
+        if (!getList().contains(map)) {
+            return false;
+        }
+
+        getList().remove(map);
+        return Storage.deleteMapFile(map);
+    }
 }

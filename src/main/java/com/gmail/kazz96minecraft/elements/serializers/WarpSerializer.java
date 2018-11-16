@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class WarpSerializer extends AbstractSerializer<Warp> {
@@ -42,19 +41,11 @@ public class WarpSerializer extends AbstractSerializer<Warp> {
     public void verifyRegisteredWarps() {
         AtomicInteger unreachableWarp = new AtomicInteger(0);
 
-        Consumer<Warp> deleteWarp = warp -> {
-            unreachableWarp.addAndGet(1);
-            Storage.deleteWarpFile(warp);
-        };
-
-        getList().forEach(warp -> {
-            if (!warp.getTileEntity().isPresent()) {
-                deleteWarp.accept(warp);
-                return;
-            }
-
-            if (!warp.getLinkedMap().isPresent()) {
-                deleteWarp.accept(warp);
+        new ArrayList<>(getList()).forEach(warp -> {
+            if (!warp.getTileEntity().isPresent() || !warp.getLinkedMap().isPresent()) {
+                if (removeRegisteredWarp(warp)) {
+                    unreachableWarp.addAndGet(1);
+                }
                 return;
             }
 
@@ -66,17 +57,25 @@ public class WarpSerializer extends AbstractSerializer<Warp> {
         }
     }
 
-    public void removeRegisteredWarp(Location<World> signLocation) {
-        Optional<Warp> optionalSign = getList().stream()
-                .filter(warp -> warp.getPosition().equals(signLocation.getBlockPosition()))
-                .findFirst();
-
-        if (!optionalSign.isPresent()) {
-            return;
+    private boolean removeRegisteredWarp(Warp warp) {
+        if (!warp.getLocation().isPresent()) {
+            return false;
         }
 
-        getList().remove(optionalSign.get());
-        Storage.deleteWarpFile(optionalSign.get());
+        return removeRegisteredWarp(warp.getLocation().get());
+    }
+
+    public boolean removeRegisteredWarp(Location<World> location) {//TODO ADD WORLD FILTER
+        Optional<Warp> optionalWarp = getList().stream()
+                .filter(warp -> warp.getPosition().equals(location.getBlockPosition()))
+                .findFirst();
+
+        if (!optionalWarp.isPresent()) {
+            return false;
+        }
+
+        getList().remove(optionalWarp.get());
+        return Storage.deleteWarpFile(optionalWarp.get());
     }
 
     public boolean isRegisteredWarp(Location<World> location) {

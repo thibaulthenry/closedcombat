@@ -54,7 +54,7 @@ public class WorldDatas {
         try {
             tagList = XNBT.loadTags(levelDat);
         } catch (IOException e) {
-            ClosedCombat.getInstance().getLogger().error("An error occurs while initializing " + worldName);
+            ClosedCombat.getInstance().getLogger().error("An error occurred while initializing " + worldName);
             return;
         }
 

@@ -22,6 +22,7 @@ public abstract class AbstractCommand implements CommandExecutor {
     @SuppressWarnings("NullableProblems")
     public abstract CommandResult execute(CommandSource source, CommandContext arguments) throws CommandException;
 
+    @SuppressWarnings("unused")
     public abstract CommandSpec getCommandSpec();
 
     protected Supplier<CommandException> supplyError(String text) {

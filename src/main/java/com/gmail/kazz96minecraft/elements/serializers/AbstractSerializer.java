@@ -27,14 +27,12 @@ public abstract class AbstractSerializer<T> {
     }
 
     private Optional<T> deserialize(File file) {
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-
+        try (Reader reader = new FileReader(file); BufferedReader bufferedReader = new BufferedReader(reader)) {
             Gson gson = new Gson();
             T deserialized = gson.fromJson(bufferedReader, clazz);
             return Optional.of(deserialized);
-        } catch (FileNotFoundException e) {
-            ClosedCombat.getInstance().getLogger().error("An error occurs while loading " + file, e);
+        } catch (IOException e) {
+            ClosedCombat.getInstance().getLogger().error("An error occurred while loading " + file, e);
             return Optional.empty();
         }
     }
@@ -45,7 +43,7 @@ public abstract class AbstractSerializer<T> {
             gson.toJson(serialized, writer);
             return true;
         } catch (IOException e) {
-            ClosedCombat.getInstance().getLogger().error("An error occurs while saving " + serialized.toString() + "'s properties file", e);
+            ClosedCombat.getInstance().getLogger().error("An error occurred while saving " + serialized.toString() + "'s properties file", e);
             return false;
         }
     }
@@ -59,7 +57,7 @@ public abstract class AbstractSerializer<T> {
                     .map(Optional::get)
                     .forEach(elementList::add);
         } catch (NullPointerException e) {
-            ClosedCombat.getInstance().getLogger().error("An error occurs while loading map properties files", e);
+            ClosedCombat.getInstance().getLogger().error("An error occurred while loading map properties files", e);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.gmail.kazz96minecraft.commands.world;
 
+import com.flowpowered.math.vector.Vector3d;
 import com.gmail.kazz96minecraft.commands.AbstractCommand;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -35,7 +36,13 @@ public class Teleport extends AbstractCommand {
         double z = arguments.<Double>getOne("z").orElseThrow(() -> new CommandException(Text.of("Missing <z> coordinates")));
 
         Location<World> location = world.getLocation(x, y, z);
-        player.setLocation(location.add(0.5, 0.5, 0.5));
+        player.setLocation(location.add(0.5, 0, 0.5));
+
+        double rx = arguments.<Double>getOne("rx").orElse(player.getRotation().getX());
+        double ry = arguments.<Double>getOne("ry").orElse(player.getRotation().getY());
+        double rz = arguments.<Double>getOne("rz").orElse(player.getRotation().getZ());
+
+        player.setRotation(new Vector3d(rx, ry, rz));
 
         return CommandResult.success();
     }
@@ -50,7 +57,10 @@ public class Teleport extends AbstractCommand {
                         GenericArguments.playerOrSource(Text.of("player")),
                         GenericArguments.optional(GenericArguments.doubleNum(Text.of("x"))),
                         GenericArguments.optional(GenericArguments.doubleNum(Text.of("y"))),
-                        GenericArguments.optional(GenericArguments.doubleNum(Text.of("z")))
+                        GenericArguments.optional(GenericArguments.doubleNum(Text.of("z"))),
+                        GenericArguments.optional(GenericArguments.doubleNum(Text.of("rx"))),
+                        GenericArguments.optional(GenericArguments.doubleNum(Text.of("ry"))),
+                        GenericArguments.optional(GenericArguments.doubleNum(Text.of("rz")))
                 )
                 .executor(instance)
                 .build();

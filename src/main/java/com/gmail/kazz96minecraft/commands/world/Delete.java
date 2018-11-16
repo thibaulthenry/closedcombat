@@ -31,7 +31,7 @@ public class Delete extends AbstractCommand {
 
             return CommandResult.success();
         } catch (InterruptedException | ExecutionException e) {
-            throw new CommandException(Text.of("An error occurs while deleting ", worldName), e);
+            throw new CommandException(Text.of("An error occurred while deleting ", worldName), e);
         }
     }
 

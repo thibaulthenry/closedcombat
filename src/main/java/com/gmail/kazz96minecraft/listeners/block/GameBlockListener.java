@@ -31,7 +31,7 @@ public class GameBlockListener {
                 .map(Transaction::getOriginal)
                 .anyMatch(blockSnapshot -> breakableBlocks.contains(blockSnapshot.getExtendedState().getId()));
 
-        if (!breakable) {
+        if (!breakable || !optionalGame.get().isRunning()) {
             event.setCancelled(true);
         }
     }
@@ -50,7 +50,7 @@ public class GameBlockListener {
                 .map(Transaction::getFinal)
                 .anyMatch(blockSnapshot -> placeableBlocks.contains(blockSnapshot.getExtendedState().getId()));
 
-        if (!placeable) {
+        if (!placeable || !optionalGame.get().isRunning()) {
             event.setCancelled(true);
         }
     }

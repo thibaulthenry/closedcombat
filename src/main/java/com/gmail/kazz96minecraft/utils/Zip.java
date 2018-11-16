@@ -6,16 +6,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class Zip {
 
     public static void zipWorld(String worldName) throws Exception {
@@ -76,7 +73,7 @@ public class Zip {
             zipInputStream.close();
             fileInputStream.close();
         } catch (IOException e) {
-            ClosedCombat.getInstance().getLogger().error("An error occurs while extracting " + worldName, e);
+            ClosedCombat.getInstance().getLogger().error("An error occurred while extracting " + worldName, e);
         }
     }
 

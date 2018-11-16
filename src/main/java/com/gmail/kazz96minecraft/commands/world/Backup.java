@@ -29,7 +29,7 @@ public class Backup extends AbstractCommand {
         try {
             Zip.zipWorld(worldName);
         } catch (Exception e) {
-            throw new CommandException(Text.of("An error occurs while backuping ", worldName), e);
+            throw new CommandException(Text.of("An error occurred while backuping ", worldName), e);
         }
 
         source.sendMessage(Text.of(TextColors.GREEN, worldName, " has been backuped successfully"));

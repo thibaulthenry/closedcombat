@@ -5,7 +5,8 @@ import com.gmail.kazz96minecraft.elements.Warp;
 import com.gmail.kazz96minecraft.elements.serializers.MapSerializer;
 import com.gmail.kazz96minecraft.elements.serializers.WarpSerializer;
 import com.gmail.kazz96minecraft.events.game.*;
-import org.spongepowered.api.Sponge;
+import com.gmail.kazz96minecraft.utils.Shortcuts;
+import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.entity.living.player.Player;
@@ -31,13 +32,14 @@ public class CCSignListener {
     @Listener
     public void onCCWarpClickEvent(InteractBlockEvent.Secondary event, @First Player player) {
         Optional<Location<World>> optionalLocation = event.getTargetBlock().getLocation();
+
         if (!optionalLocation.isPresent()) {
             return;
         }
 
         Location<World> warpLocation = optionalLocation.get();
 
-        if (!WarpSerializer.getInstance().isRegisteredWarp(optionalLocation.get())) {
+        if (!WarpSerializer.getInstance().isRegisteredWarp(warpLocation)) {
             return;
         }
 
@@ -49,7 +51,7 @@ public class CCSignListener {
             return;
         }
 
-        Sponge.getCommandManager().process(player, "cc map join " + optionalMap.get().getName());
+        Shortcuts.runCommand("cc", "map", "join", optionalMap.get().getName(), player.getName());
     }
 
     @Listener
@@ -60,7 +62,7 @@ public class CCSignListener {
 
         List<Text> lines = event.getText().lines().get();
 
-        if (!lines.get(1).toPlain().equals("WARP")) {
+        if (!StringUtils.upperCase(lines.get(1).toPlain()).equals("WARP")) {
             return;
         }
 
@@ -80,13 +82,13 @@ public class CCSignListener {
 
         event.getText().setElement(0, Text.of("[CC]"));
         event.getText().setElement(1, Text.of(map.getName()));
-        event.getText().setElement(2, Text.of(TextColors.GREEN, "AVAILABLE"));
-        event.getText().setElement(3, Text.of(TextStyles.ITALIC, 0, "/", map.getMaxPlayers()));
+        event.getText().setElement(2, Text.of(TextStyles.BOLD, TextColors.GREEN, "AVAILABLE"));
+        event.getText().setElement(3, Text.of(TextStyles.ITALIC, TextColors.WHITE, 0, "/", map.getMaxPlayers()));
 
-        Warp warp = new Warp(event.getTargetTile().getLocation(), mapName);
+        Warp warp = new Warp(event.getTargetTile().getLocation(), StringUtils.capitalize(mapName));
 
         if (!WarpSerializer.getInstance().serialize(warp)) {
-            player.sendMessage(Text.of(TextColors.RED, "An error occurs while creating " + map.getName() + " warp's properties file"));
+            player.sendMessage(Text.of(TextColors.RED, "An error occurred while creating " + map.getName() + " warp's properties file"));
             return;
         }
 
@@ -124,10 +126,10 @@ public class CCSignListener {
                 return;
             }
 
-            WarpSerializer.getInstance().removeRegisteredWarp(blockLocation);
-
-            if (blockLocation.removeBlock()) {
+            if (WarpSerializer.getInstance().removeRegisteredWarp(blockLocation) && blockLocation.removeBlock()) {
                 player.sendMessage(Text.of(TextColors.GREEN, "The CCWarp at ", blockLocation.getBlockPosition(), " has been deleted successfully"));
+            } else {
+                player.sendMessage(Text.of(TextColors.RED, "An error occurred while deleting the CCWarp at ", blockLocation.getBlockPosition()));
             }
         });
 
@@ -135,7 +137,7 @@ public class CCSignListener {
                 .append(Text.of("CCWarp Break detected, please confirm deletion : "))
                 .append(Text.builder()
                         .append(Text.of("[YES]"))
-                        .color(TextColors.DARK_RED)
+                        .color(TextColors.RED)
                         .style(TextStyles.BOLD)
                         .onClick(removeBlockAction)
                         .onHover(TextActions.showText(Text.of("Click to delete the CCWarp")))
@@ -166,7 +168,7 @@ public class CCSignListener {
     }
 
     @Listener
-    public void onCountDown(GameCountdownEvent event) {
+    public void onCountdown(GameCountdownEvent event) {
         WarpSerializer.getInstance().getWarps(event.getGame().getLinkedMap()).forEach(warp -> warp.update(event.getCountdown()));
     }
 

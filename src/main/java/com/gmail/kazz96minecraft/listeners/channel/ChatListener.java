@@ -1,11 +1,13 @@
 package com.gmail.kazz96minecraft.listeners.channel;
 
+import com.google.common.collect.ImmutableSet;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
+import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.format.TextColors;
 
 import java.time.LocalDateTime;
@@ -16,6 +18,12 @@ public class ChatListener {
 
     @Listener
     public void onPlayerSendMessage(MessageChannelEvent.Chat event, @First Player player) {
+        event.setChannel(() ->
+                ImmutableSet.<MessageReceiver>builder()
+                        .addAll(player.getLocation().getExtent().getPlayers())
+                        .build()
+        );
+
         Text message = Text.builder()
                 .append(Text.of(TextColors.DARK_GRAY, "<"))
                 .append(

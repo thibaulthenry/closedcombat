@@ -4,7 +4,7 @@ import com.gmail.kazz96minecraft.commands.AbstractCommand;
 import com.gmail.kazz96minecraft.elements.Game;
 import com.gmail.kazz96minecraft.elements.Map;
 import com.gmail.kazz96minecraft.elements.serializers.MapSerializer;
-import org.spongepowered.api.Sponge;
+import com.gmail.kazz96minecraft.utils.Shortcuts;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -38,10 +38,10 @@ public class Update extends AbstractCommand {
         Map.leftBlockMarker = new Location<>(oldMap.getLinkedWorld().get(), oldMap.getLeftLimitPosition());
         Map.rightBlockMarker = new Location<>(oldMap.getLinkedWorld().get(), oldMap.getRightLimitPosition());
 
-        CommandResult createCommand = Sponge.getCommandManager().process(Sponge.getServer().getConsole(), "cc map create " + oldMap.getName());
+        CommandResult createCommand = Shortcuts.runCommand("cc", "map", "create", oldMap.getName());
 
         if (!createCommand.equals(CommandResult.success())) {
-            throw new CommandException(Text.of("An error occurs while updating ", oldMap.getName(), " configuration file"));
+            throw new CommandException(Text.of("An error occurred while updating ", oldMap.getName(), " configuration file"));
         }
 
         source.sendMessage(Text.of(TextColors.GREEN, "The configuration file of ", oldMap.getName(), " has been updated successfully"));

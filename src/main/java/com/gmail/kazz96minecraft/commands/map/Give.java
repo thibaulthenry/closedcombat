@@ -10,6 +10,7 @@ import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.entity.Hotbar;
@@ -17,6 +18,9 @@ import org.spongepowered.api.item.inventory.entity.MainPlayerInventory;
 import org.spongepowered.api.item.inventory.query.QueryOperationTypes;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+
+import java.util.Arrays;
+import java.util.function.Function;
 
 public class Give extends AbstractCommand {
 
@@ -28,12 +32,25 @@ public class Give extends AbstractCommand {
         Inventory hotbarInventory = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(Hotbar.class));
         Inventory mainInventory = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(MainPlayerInventory.class));
 
-        for (Inventory slot : hotbarInventory.union(mainInventory)) {
-            if (slot.size() == 0) {
-                slot.set(item);
-                player.sendMessage(Text.of(TextColors.AQUA, item.get(Keys.DISPLAY_NAME).orElse(Text.of("An item")), " have been added to your inventory"));
+        Function<ItemStack, Boolean> giveAction = anItem -> {
+            for (Inventory slot : hotbarInventory.union(mainInventory)) {
+                if (slot.size() == 0) {
+                    slot.set(anItem);
+                    player.sendMessage(Text.of(TextColors.AQUA, anItem.get(Keys.DISPLAY_NAME).orElse(Text.of("An item")), " have been added to your inventory"));
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        if (item.getType().equals(ItemTypes.BARRIER)) {
+            if (Arrays.stream(CCItems.values())
+                    .filter(ccItem -> !ccItem.get().getType().equals(ItemTypes.BARRIER))
+                    .allMatch(ccItem -> giveAction.apply(ccItem.get()))) {
                 return CommandResult.success();
             }
+        } else if (giveAction.apply(item)) {
+            return CommandResult.success();
         }
 
         throw new CommandException(Text.of("Unable to give anything, the " + player.getName() + "'s inventory is full of items"));

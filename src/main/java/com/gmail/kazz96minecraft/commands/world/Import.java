@@ -47,7 +47,7 @@ public class Import extends AbstractCommand {
         try {
             worldProperties = Sponge.getServer().createWorldProperties(worldName, settings);
         } catch (IOException e) {
-            throw new CommandException(Text.of("An error occurs while creating ", worldName, "'s properties"), e);
+            throw new CommandException(Text.of("An error occurred while creating ", worldName, "'s properties"), e);
         }
 
         Sponge.getServer().saveWorldProperties(worldProperties);

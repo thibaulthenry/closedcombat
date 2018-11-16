@@ -9,6 +9,7 @@ import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.GenericArguments;
+import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
@@ -32,11 +33,17 @@ public class Create extends AbstractCommand {
             Map map = new Map(mapName);
 
             if (!MapSerializer.getInstance().serialize(map)) {
-                source.sendMessage(Text.of(TextColors.RED, "An error occurs while creating ", mapName, "'s properties file"));
+                source.sendMessage(Text.of(TextColors.RED, "An error occurred while creating ", mapName, "'s properties file"));
                 return;
             }
 
             MapSerializer.getInstance().getList().add(map);
+
+            if (source instanceof ConsoleSource) {
+                source.sendMessage(Text.of(TextColors.GREEN, mapName, " has been updated successfully"));
+                return;
+            }
+
             source.sendMessage(Text.of(TextColors.GREEN, mapName, " has been created successfully"));
         }).submit(ClosedCombat.getInstance());
 
